@@ -1,22 +1,15 @@
-
 # coding: utf-8
-
-# In[ ]:
 
 import sys
 import os
-import keras
+#import keras
 #keras.backend.set_image_data_format('channels_last')
-
-
-# In[3]:
 
 from keras.models import load_model, Model
 from testing import testDescriptor
 from argparse import ArgumentParser
 from keras import backend as K
 from Losses import * #needed!
-import os
 import numpy as np
 import matplotlib
 matplotlib.use('agg')
@@ -25,10 +18,9 @@ from sklearn.metrics import roc_curve, auc
 from root_numpy import array2root
 import pandas as pd
 
+# Make all preformance plots
+def make_plots(test_files_dc, model, outputDir):
 
-# In[4]:
-
-def makeRoc(testd, model, outputDir):
     ## # summarize history for loss for training and test sample
     ## plt.figure(1)
     ## plt.plot(callbacks.history.history['loss'])
@@ -49,16 +41,16 @@ def makeRoc(testd, model, outputDir):
     ## plt.legend(['train', 'test'], loc='upper left')
     ## plt.savefig(self.outputDir+'accuracycurve.pdf')
     ## plt.close(2)
-
-    print 'in makeRoc()'
     
-    # let's use only first 10000000 entries
+    # Get variables from the test files data collection
     NENT = 10000000
-    features_val = [fval[:NENT] for fval in testd.getAllFeatures()]
-    labels_val=testd.getAllLabels()[0][:NENT,:]
-    weights_val=testd.getAllWeights()[0][:NENT]
-    spectators_val = testd.getAllSpectators()[0][:NENT,0,:]
-    print features_val[0].shape
+    features_val = [fval[:NENT] for fval in test_files_dc.getAllFeatures()]
+    labels_val=test_files_dc.getAllLabels()[0][:NENT,:]
+    weights_val=test_files_dc.getAllWeights()[0][:NENT]
+    spectators_val = test_files_dc.getAllSpectators()[0][:NENT,0,:]
+    print features_val
+    print labels_val
+    print spectators_val
     df = pd.DataFrame(spectators_val)
     df.columns = ['fj_pt',
                   'fj_eta',
@@ -71,19 +63,24 @@ def makeRoc(testd, model, outputDir):
                   'npfcands',
                   'ntracks',
                   'nsv']
-
     print(df.iloc[:10])
 
-        
+    # Run a prediction based on the trained model
     predict_test = model.predict(features_val)
     df['fj_isH'] = labels_val[:,1]
     df['fj_deepdoubleb'] = predict_test[:,1]
+    # Cuts
     df = df[(df.fj_sdmass > 40) & (df.fj_sdmass < 200) & (df.fj_pt > 300) &  (df.fj_pt < 2500)]
 
     print(df.iloc[:10])
 
+    # ROC curve from sklearn metrics
+    # http://scikit-learn.org/stable/modules/generated/sklearn.metrics.auc.html
+    # Double B
     fpr, tpr, threshold = roc_curve(df['fj_isH'],df['fj_deepdoubleb'])
+    # Boosted decision trees - benchmark
     dfpr, dtpr, threshold1 = roc_curve(df['fj_isH'],df['fj_doubleb'])
+    print threshold
 
     def find_nearest(array,value):
         idx = (np.abs(array-value)).argmin()
@@ -96,9 +93,11 @@ def makeRoc(testd, model, outputDir):
         deepdoublebcuts[str(wp)] = threshold[idx] # threshold for deep double-b corresponding to ~1% mistag rate
         print('deep double-b > %f coresponds to %f%% QCD mistag rate'%(deepdoublebcuts[str(wp)] ,100*val))
 
+    # auc = computer area under a curve, auc(xs, ys)
     auc1 = auc(fpr, tpr)
     auc2 = auc(dfpr, dtpr)
 
+    # Compare ROC curves for deep learnening and BDT
     plt.figure()       
     plt.plot(tpr,fpr,label='deep double-b, auc = %.1f%%'%(auc1*100))
     plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(auc2*100))
@@ -110,6 +109,7 @@ def makeRoc(testd, model, outputDir):
     plt.legend()
     plt.savefig(outputDir+"test.pdf")
     
+    # BDT discriminator plot
     plt.figure()
     bins = np.linspace(-1,1,70)
     plt.hist(df['fj_doubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
@@ -118,6 +118,7 @@ def makeRoc(testd, model, outputDir):
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"doubleb.pdf")
     
+    # Deep discriminator plot
     plt.figure()
     bins = np.linspace(0,1,70)
     plt.hist(df['fj_deepdoubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
@@ -128,6 +129,7 @@ def makeRoc(testd, model, outputDir):
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"deepdoubleb.pdf")
     
+    # Momentum
     plt.figure()
     bins = np.linspace(0,2000,70)
     plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
@@ -136,6 +138,7 @@ def makeRoc(testd, model, outputDir):
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"pt.pdf")
     
+    # Soft drop mass
     plt.figure()
     bins = np.linspace(40,200,41)
     plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
@@ -144,6 +147,7 @@ def makeRoc(testd, model, outputDir):
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"msd.pdf")
     
+    # Soft drop mass for tagged H jets
     plt.figure()
     bins = np.linspace(40,200,41)
     df_passdoubleb = df[df.fj_doubleb > 0.9]
@@ -153,6 +157,7 @@ def makeRoc(testd, model, outputDir):
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"msd_passdoubleb.pdf")
     
+    # Mass sculpting plots
     plt.figure()
     bins = np.linspace(40,200,41)
     for wp, deepdoublebcut in reversed(sorted(deepdoublebcuts.iteritems())):
@@ -175,43 +180,45 @@ def makeRoc(testd, model, outputDir):
 
 os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
-inputDir = 'train_deep_init_64_32_32_b1024/'
+###############
+#########
+#################
+# Set lcoations
+inputDir = 'out_train_simple/'
 inputModel = '%s/KERAS_check_best_model.h5'%inputDir
-outputDir = inputDir.replace('train','out') 
+outputDir = inputDir.replace('train','eval') 
 
 # test data:
-inputDataCollection = '/cms-sc17/convert_20170717_ak8_deepDoubleB_init_test/dataCollection.dc'
-# training data:
-#inputDataCollection = '../convertFromRoot/convert_20170717_ak8_deepDoubleB_init_train_val_fixQCD_new/dataCollection.dc'
+inputDataCollection = '/eos/user/a/anovak/DeepJet/convertFromRoot/test_simple/dataCollection.dc'
 
+# Check if dir works
 if os.path.isdir(outputDir):
     raise Exception('output directory must not exists yet')
 else: 
     os.mkdir(outputDir)
 
+# Load model
 model=load_model(inputModel, custom_objects=global_loss_list)
-    
-
 #intermediate_output = intermediate_layer_model.predict(data)
-
 #print(model.summary())
     
+# Load data    
 from DataCollection import DataCollection
     
-testd=DataCollection()
-testd.readFromFile(inputDataCollection)
-    
-df = makeRoc(testd, model, outputDir)
+test_files_dc=DataCollection()
+test_files_dc.readFromFile(inputDataCollection)
+
+# Make plots    
+df = make_plots(test_files_dc, model, outputDir)
 
 
-# In[ ]:
-
+##############################################
+##############################################
+############################################
+# Make loss plots
 # let's use only first 10000000 entries
 NENT = 10000000
-features_val = [fval[:NENT] for fval in testd.getAllFeatures()]
-
-
-# In[ ]:
+features_val = [fval[:NENT] for fval in test_files_dc.getAllFeatures()]
 
 print model.summary()
 
@@ -251,7 +258,7 @@ plt.plot(loss, label='train')
 plt.legend()
 plt.xlabel('epoch')
 plt.ylabel('loss')
-plt.savefig("%s/loss.pdf"%outputDir)
+plt.savefig("%sloss.pdf"%outputDir)
 
 
 

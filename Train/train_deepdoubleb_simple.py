@@ -1,4 +1,4 @@
-
+    
 # coding: utf-8
 
 # In[1]:
@@ -19,7 +19,7 @@ class MyClass:
 
 
 # In[5]:
-import setGPU
+#import setGPU
 #os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 from training_base import training_base
@@ -27,8 +27,9 @@ from Losses import loss_NLL
 import sys
 
 args = MyClass()
-args.inputDataCollection = '../convertFromRoot/convert_20170717_ak8_deepDoubleB_init_test/dataCollection.dc'
-args.outputDir = 'train_deep_init_64_32_32_b1024'
+#args.inputDataCollection = '../convertFromRoot/convert_20170717_ak8_deepDoubleB_init_test/dataCollection.dc'
+args.inputDataCollection = '../convertFromRoot/convert/dataCollection.dc'
+args.outputDir = 'out_train_simple'
 
 #also does all the parsing
 train=training_base(testrun=False,args=args)
@@ -44,7 +45,7 @@ if not train.modelSet():
                        metrics=['accuracy'])
     
 
-model,history,callbacks = train.trainModel(nepochs=500, 
+model,history,callbacks = train.trainModel(nepochs=60, 
                                 batchsize=1024, 
                                  stop_patience=1000, 
                                  lr_factor=0.5, 
