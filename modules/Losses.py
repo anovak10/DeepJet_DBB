@@ -33,6 +33,30 @@ def loss_kldiv(y_in,x):
 #please always register the loss function here                                                                                              
 global_loss_list['loss_kldiv']=loss_kldiv
 
+def loss_antireg(y_in,x_in):
+    # h is the histogram vector "one hot encoded" (40 bins in this case), techically part of the "truth" y                         
+    h = y_in[:,0:NBINS]
+    y = y_in[:,NBINS:]
+    hpred = x_in[:,0:NBINS]
+    ypred = x_in[:,NBINS:]
+
+    return 0.0001*categorical_crossentropy(y, ypred) - 0.01*categorical_crossentropy(h, hpred)
+
+#please always register the loss function here                                                                                             
+global_loss_list['loss_antireg']=loss_antireg
+
+def loss_reg(y_in,x_in):
+    # h is the histogram vector "one hot encoded" (40 bins in this case), techically part of the "truth" y                         
+    h = y_in[:,0:NBINS]
+    y = y_in[:,NBINS:]
+    hpred = x_in[:,0:NBINS]
+    ypred = x_in[:,NBINS:]
+
+    return categorical_crossentropy(y, ypred) + categorical_crossentropy(h, hpred)
+
+#please always register the loss function here                                                                                             
+global_loss_list['loss_reg']=loss_reg
+ 
 def loss_NLL(y_true, x):
     """
     This loss is the negative log likelyhood for gaussian pdf.

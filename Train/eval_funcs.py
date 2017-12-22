@@ -25,6 +25,7 @@ from sklearn.metrics import roc_curve, auc
 from root_numpy import array2root
 import pandas as pd
 import h5py
+from Losses import NBINS
 
 sess = tf.InteractiveSession()
 
@@ -36,6 +37,8 @@ def loadModel(inputDir,trainData,model,LoadModel,sampleDatasets=None,removedVars
 
     traind=DataCollection()
     traind.readFromFile(trainData)
+    traind.dataclass.regressiontargetclasses = range(0,NBINS)
+    print traind.getNRegressionTargets()
 
     if(LoadModel):
         evalModel = load_model(inputModel, custom_objects = global_loss_list)
@@ -138,7 +141,7 @@ def makeRoc(testd, model, outputDir):
     #print('loss_kldiv',loss_kldiv(OH_tf,predict_tf).eval())
 
     df['fj_isH'] = labels_val[:,1]
-    df['fj_deepdoubleb'] = predict_test[:,1]
+    df['fj_deepdoubleb'] = predict_test[:,NBINS+1]
     df = df[(df.fj_sdmass > 40) & (df.fj_sdmass < 200) & (df.fj_pt > 300) &  (df.fj_pt < 2500)]
 
     print(df.iloc[:10])
@@ -213,12 +216,12 @@ def makeRoc(testd, model, outputDir):
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"msd_passdoubleb.pdf")
-    
+
     plt.figure()
     bins = np.linspace(40,200,41)
     for wp, deepdoublebcut in reversed(sorted(deepdoublebcuts.iteritems())):
         df_passdeepdoubleb = df[df.fj_deepdoubleb > deepdoublebcut]
-        plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD %i%% mis-tag'%(float(wp)*100.))
+        plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],normed=True,histtype='step',label='QCD %i%% mis-tag'%(float(wp)*100.))
         #plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb) %s'%wp)
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper right')

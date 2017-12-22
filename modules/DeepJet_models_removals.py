@@ -131,8 +131,54 @@ def conv_model_removals(inputs, num_classes, num_regclasses, datasets, removedVa
 
     fc = FC(concat, 100, p=0.1, name='fc1')
     output = keras.layers.Dense(num_classes, activation='softmax', name='softmax', kernel_initializer=kernel_initializer_fc)(fc)
-                            
+    if num_regclasses>0: 
+        #concat_fc = keras.layers.concatenate([fc, output], name='concat_fc')
+        #output_reg = keras.layers.Dense(num_regclasses, activation='softmax', name='softmax_reg', kernel_initializer=kernel_initializer_fc)(concat_fc)
+        output_reg = keras.layers.Dense(num_regclasses, activation='softmax', name='softmax_reg', kernel_initializer=kernel_initializer_fc)(fc)
+        output = keras.layers.concatenate([output_reg, output], name='concat_reg')
     print output.shape
+    
+    model = keras.models.Model(inputs=inputs, outputs=output)
+
+    print model.summary()
+    return model
+
+def conv_model_removals_adv(inputs, num_classes, num_regclasses, datasets, removedVars = None, **kwargs):
+
+    cutInputs = inputs
+
+    if removedVars is not None:
+        cutInputs = cropInputs(inputs, datasets, removedVars)
+
+    flattenLayers = []
+    flattenLayers.append(keras.layers.Flatten()(cutInputs[0]))
+
+    for ds, cutInput in zip(datasets[1:],cutInputs[1:]):                
+        x = keras.layers.Conv1D(filters=32, kernel_size=(1,), strides=(1,), padding='same', 
+                                kernel_initializer=kernel_initializer, use_bias=False, name='%s_conv1'%ds, 
+                                activation = 'relu')(cutInput)
+        x = keras.layers.SpatialDropout1D(rate=0.1)(x)
+        x = keras.layers.Conv1D(filters=32, kernel_size=(1,), strides=(1,), padding='same', 
+                             kernel_initializer=kernel_initializer, use_bias=False, name='%s_conv2'%ds, 
+                             activation = 'relu')(x)
+        x = keras.layers.SpatialDropout1D(rate=0.1)(x)
+        x = keras.layers.GRU(50,go_backwards=True,implementation=2,name='%s_gru'%ds)(x)
+        x = keras.layers.Dropout(rate=0.1)(x)
+        flattenLayers.append(x)
+    concat = keras.layers.concatenate(flattenLayers, name='concat')
+
+
+    fc = FC(concat, 100, p=0.1, name='fc1')
+    output = keras.layers.Dense(num_classes, activation='softmax', name='softmax', kernel_initializer=kernel_initializer_fc)(fc)
+    if num_regclasses>0: 
+        #concat_fc = keras.layers.concatenate([fc, output], name='concat_fc')
+        #output_reg = keras.layers.Dense(num_regclasses, activation='softmax', name='softmax_reg', kernel_initializer=kernel_initializer_fc)(concat_fc)
+        fc = FC(output, 20, p=0.1, name='fc2')
+        fc = FC(fc, 20, p=0.1, name='fc3')
+        output_reg = keras.layers.Dense(num_regclasses, activation='softmax', name='softmax_reg', kernel_initializer=kernel_initializer_fc)(fc)
+        output = keras.layers.concatenate([output_reg, output], name='concat_reg')
+    print output.shape
+    
     model = keras.models.Model(inputs=inputs, outputs=output)
 
     print model.summary()

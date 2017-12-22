@@ -27,7 +27,7 @@ if os.path.isdir(args.outputDir):
 
 
 model=load_model(args.inputModel, custom_objects=global_loss_list)
-
+print(model.summary())
 
 
 num_output = 2
@@ -50,13 +50,18 @@ tfoutpath=args.outputDir+'/tf.checkpoint'
 
 #os.system('mkdir -p '+tfoutpath)
 
-f = 'only_the_graph_def.pb.ascii'
-tf.train.write_graph(tfsession.graph.as_graph_def(), args.outputDir, f, as_text=True)
-print('saved the graph definition in ascii format at: ', os.path.join(args.outputDir, f))
 
 from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import graph_io
 constant_graph = graph_util.convert_variables_to_constants(tfsession, tfsession.graph.as_graph_def(), pred_node_names)
+
+f = 'constantgraph.pb.ascii'
+tf.train.write_graph(constant_graph, args.outputDir, f, as_text=True)
+print('saved the graph definition in ascii format at: ', os.path.join(args.outputDir, f))
+
+f = 'constantgraph.pb'
+tf.train.write_graph(constant_graph, args.outputDir, f, as_text=False)
+print('saved the graph definition in pb format at: ', os.path.join(args.outputDir, f))
 
 
 graph_io.write_graph(constant_graph, args.outputDir, output_graph_name, as_text=False)
