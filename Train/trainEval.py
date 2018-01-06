@@ -10,7 +10,9 @@ from keras.models import load_model, Model
 from testing import testDescriptor
 from argparse import ArgumentParser
 from keras import backend as K
-from Losses import * #needed!                                                                                                                                                                                                                                                   
+from Losses import * #needed!                                                                                                                
+from modelTools import fixLayersContaining,printLayerInfosAndWeights
+                                                                                                                                  
 import numpy as np
 import matplotlib
 matplotlib.use('agg')
@@ -55,8 +57,8 @@ sampleDatasets_sv = ["db","sv"]
 removedVars = None
 
 #Toggle training or eval
-TrainBool =False
-EvalBool=True
+TrainBool = True
+EvalBool = False
 
 #Toggle to load model directly (True) or load weights (False)
 LoadModel = False
@@ -85,10 +87,11 @@ if TrainBool:
         train.setModel(trainingModel,inputDataset,removedVars)
     
         train.compileModel(learningrate=0.001,
-                           loss=lossFunction,
-                           metrics=['accuracy'])
+                           loss=[lossFunction],
+                           metrics=['accuracy'],
+                           loss_weights=[1.])
     
-        model,history,callbacks = train.trainModel(nepochs=300, 
+        model,history,callbacks = train.trainModel(nepochs=1, 
                                                    batchsize=1024, 
                                                    stop_patience=1000, 
                                                    lr_factor=0.7, 
@@ -96,6 +99,18 @@ if TrainBool:
                                                    lr_epsilon=0.00000001, 
                                                    lr_cooldown=2, 
                                                    lr_minimum=0.00000001, 
+                                                   maxqsize=100)
+
+        train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
+        printLayerInfosAndWeights(train.keras_model)
+        model,history,callbacks = train.trainModel(nepochs=200,
+                                                   batchsize=1024,
+                                                   stop_patience=1000,
+                                                   lr_factor=0.7,
+                                                   lr_patience=10,
+                                                   lr_epsilon=0.00000001,
+                                                   lr_cooldown=2,
+                                                   lr_minimum=0.00000001,
                                                    maxqsize=100)
 
 if EvalBool:

@@ -91,7 +91,7 @@ def conv_model_final(inputs, num_classes, num_regclasses, datasets, removedVars 
     normalizedInputs = []
 
     for i in range(len(inputs)):
-        normedLayer = BatchNormalization(momentum=0.6,name = '%s_input_batchnorm'%datasets[i])(inputs[i])
+        normedLayer = BatchNormalization(momentum=0.3,name = '%s_input_batchnorm'%datasets[i])(inputs[i])
         normalizedInputs.append(normedLayer)
 
     flattenLayers = []
@@ -109,14 +109,15 @@ def conv_model_final(inputs, num_classes, num_regclasses, datasets, removedVars 
         x = keras.layers.GRU(50,go_backwards=True,implementation=2,name='%s_gru'%ds)(x)
         x = keras.layers.Dropout(rate=0.1)(x)
         flattenLayers.append(x)
-    concat = keras.layers.concatenate(flattenLayers, name='concat')
+    #concat = keras.layers.concatenate(flattenLayers, name='concat')
+    concat = keras.layers.Concatenate()(flattenLayers)
 
 
     fc = FC(concat, 100, p=0.1, name='fc1')
-    output = keras.layers.Dense(num_classes, activation='softmax', name='softmax', kernel_initializer=kernel_initializer_fc)(fc)
+    output = keras.layers.Dense(num_classes, activation='softmax', name='ID_pred', kernel_initializer=kernel_initializer_fc)(fc)
                             
     print output.shape
-    model = keras.models.Model(inputs=inputs, outputs=output)
+    model = keras.models.Model(inputs=inputs, outputs=[output])
 
     print model.summary()
     return model
