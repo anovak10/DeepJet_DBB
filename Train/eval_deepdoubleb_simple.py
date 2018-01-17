@@ -68,7 +68,7 @@ def make_plots(test_files_dc, model, outputDir):
     # Run a prediction based on the trained model
     predict_test = model.predict(features_val)
     df['fj_isH'] = labels_val[:,1]
-    df['fj_deepdoubleb'] = predict_test[:,1]
+    df['fj_deepdoublec'] = predict_test[:,1]
     # Cuts
     df = df[(df.fj_sdmass > 40) & (df.fj_sdmass < 200) & (df.fj_pt > 300) &  (df.fj_pt < 2500)]
 
@@ -77,7 +77,7 @@ def make_plots(test_files_dc, model, outputDir):
     # ROC curve from sklearn metrics
     # http://scikit-learn.org/stable/modules/generated/sklearn.metrics.auc.html
     # Double B
-    fpr, tpr, threshold = roc_curve(df['fj_isH'],df['fj_deepdoubleb'])
+    fpr, tpr, threshold = roc_curve(df['fj_isH'],df['fj_deepdoublec'])
     # Boosted decision trees - benchmark
     dfpr, dtpr, threshold1 = roc_curve(df['fj_isH'],df['fj_doubleb'])
     print threshold
@@ -99,10 +99,10 @@ def make_plots(test_files_dc, model, outputDir):
 
     # Compare ROC curves for deep learnening and BDT
     plt.figure()       
-    plt.plot(tpr,fpr,label='deep double-b, auc = %.1f%%'%(auc1*100))
-    plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(auc2*100))
+    plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))
+    #plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(auc2*100))
     plt.semilogy()
-    plt.xlabel("H(bb) efficiency")
+    plt.xlabel("H(cc) efficiency")
     plt.ylabel("QCD mistag rate")
     plt.ylim(0.001,1)
     plt.grid(True)
@@ -113,27 +113,27 @@ def make_plots(test_files_dc, model, outputDir):
     plt.figure()
     bins = np.linspace(-1,1,70)
     plt.hist(df['fj_doubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+    plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
     plt.xlabel("BDT double-b")
     plt.legend(loc='upper left')
-    plt.savefig(outputDir+"doubleb.pdf")
+#    plt.savefig(outputDir+"doubleb.pdf")
     
     # Deep discriminator plot
     plt.figure()
     bins = np.linspace(0,1,70)
-    plt.hist(df['fj_deepdoubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_deepdoubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
-    plt.xlabel("deep double-b")
+    plt.hist(df['fj_deepdoublec'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+    plt.hist(df['fj_deepdoublec'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    plt.xlabel("deep double-c")
     #plt.ylim(0.00001,1)
     #plt.semilogy()
     plt.legend(loc='upper left')
-    plt.savefig(outputDir+"deepdoubleb.pdf")
+    plt.savefig(outputDir+"deepdoublec.pdf")
     
     # Momentum
     plt.figure()
     bins = np.linspace(0,2000,70)
     plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+    plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
     plt.xlabel(r'$p_{\mathrm{T}}$')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"pt.pdf")
@@ -142,7 +142,7 @@ def make_plots(test_files_dc, model, outputDir):
     plt.figure()
     bins = np.linspace(40,200,41)
     plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"msd.pdf")
@@ -150,31 +150,31 @@ def make_plots(test_files_dc, model, outputDir):
     # Soft drop mass for tagged H jets
     plt.figure()
     bins = np.linspace(40,200,41)
-    df_passdoubleb = df[df.fj_doubleb > 0.9]
-    plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
-    plt.xlabel(r'$m_{\mathrm{SD}}$')
-    plt.legend(loc='upper left')
-    plt.savefig(outputDir+"msd_passdoubleb.pdf")
+    #df_passdoubleb = df[df.fj_doubleb > 0.9]
+    #plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD')
+    #plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    #plt.xlabel(r'$m_{\mathrm{SD}}$')
+    #plt.legend(loc='upper left')
+    #plt.savefig(outputDir+"msd_passdoubleb.pdf")
     
     # Mass sculpting plots
-    plt.figure()
-    bins = np.linspace(40,200,41)
-    for wp, deepdoublebcut in reversed(sorted(deepdoublebcuts.iteritems())):
-        df_passdeepdoubleb = df[df.fj_deepdoubleb > deepdoublebcut]
-        plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD %i%% mis-tag'%(float(wp)*100.))
-        #plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb) %s'%wp)
-    plt.xlabel(r'$m_{\mathrm{SD}}$')
-    plt.legend(loc='upper right')
-    plt.savefig(outputDir+"msd_passdeepdoubleb.pdf")
+    #plt.figure()
+    #bins = np.linspace(40,200,41)
+    #for wp, deepdoublebcut in reversed(sorted(deepdoublebcuts.iteritems())):
+    #    df_passdeepdoubleb = df[df.fj_deepdoublec > deepdoublebcut]
+    #    plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD %i%% mis-tag'%(float(wp)*100.))
+    #    #plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb) %s'%wp)
+    #plt.xlabel(r'$m_{\mathrm{SD}}$')
+    #plt.legend(loc='upper right')
+    #plt.savefig(outputDir+"msd_passdeepdoubleb.pdf")
     
-    plt.figure()
-    bins = np.linspace(40,200,41)
-    plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_deepdoubleb'],alpha=0.5,normed=True,label='pred. QCD')
-    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoubleb'],alpha=0.5,normed=True,label='pred. H(bb)')
-    plt.xlabel(r'$m_{\mathrm{SD}}$')
-    plt.legend(loc='upper left')
-    plt.savefig(outputDir+"msd_weightdeepdoubleb.pdf")
+    #plt.figure()
+    #bins = np.linspace(40,200,41)
+    #plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_deepdoublec'],alpha=0.5,normed=True,label='pred. QCD')
+    #plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec'],alpha=0.5,normed=True,label='pred. H(c)')
+    #plt.xlabel(r'$m_{\mathrm{SD}}$')
+    #plt.legend(loc='upper left')
+    #plt.savefig(outputDir+"msd_weightdeepdoubleb.pdf")
 
     return df
 
@@ -184,12 +184,12 @@ os.environ['CUDA_VISIBLE_DEVICES'] = ''
 #########
 #################
 # Set lcoations
-inputDir = 'out_train_simple/'
+inputDir = 'out_train2/'
 inputModel = '%s/KERAS_check_best_model.h5'%inputDir
 outputDir = inputDir.replace('train','eval') 
 
 # test data:
-inputDataCollection = '/eos/user/a/anovak/DeepJet/convertFromRoot/test_simple/dataCollection.dc'
+inputDataCollection = '/eos/user/a/anovak/DeepJet/convertFromRoot/test2/dataCollection.dc'
 
 # Check if dir works
 if os.path.isdir(outputDir):

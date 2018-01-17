@@ -28,17 +28,17 @@ import sys
 
 args = MyClass()
 #args.inputDataCollection = '../convertFromRoot/convert_20170717_ak8_deepDoubleB_init_test/dataCollection.dc'
-args.inputDataCollection = '../convertFromRoot/convert/dataCollection.dc'
-args.outputDir = 'out_train_simple'
+args.inputDataCollection = '../convertFromRoot/train2/dataCollection.dc'
+args.outputDir = 'out_train2_check'
 
 #also does all the parsing
 train=training_base(testrun=False,args=args)
 
 
 if not train.modelSet():
-    from DeepJet_models_ResNet import deep_model_doubleb_sv
+    from DeepJet_models_ResNet import deep_model_doubleb
 
-    train.setModel(deep_model_doubleb_sv)
+    train.setModel(deep_model_doubleb)
     
     train.compileModel(learningrate=0.0001,
                        loss=['categorical_crossentropy'],
