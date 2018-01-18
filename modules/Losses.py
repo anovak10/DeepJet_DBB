@@ -3,13 +3,18 @@ from keras.losses import kullback_leibler_divergence, categorical_crossentropy
 import tensorflow as tf
 
 global_loss_list={}
+NBINS=40 # number of bins for loss function
 
 #whenever a new loss function is created, please add it to the global_loss_list dictionary!
 def loss_kldiv(y_in,x):
     # h is the histogram vector "one hot encoded" (40 bins in this case), techically part of the "truth" y                         
-    h = y_in[:,0:40]
-    y = y_in[:,40:]
-
+    h = y_in[:,0:NBINS]
+    y = y_in[:,NBINS:]
+    h_all = K.dot(K.transpose(h), y)
+    h_all_q = h_all[:,0]
+    h_all_h = h_all[:,1]
+    h_all_q = h_all_q / K.sum(h_all_q,axis=0)
+    h_all_h = h_all_h / K.sum(h_all_h,axis=0)
     h_btag_anti_q = K.dot(K.transpose(h), K.dot(tf.diag(y[:,0]),x))
     h_btag_anti_h = K.dot(K.transpose(h), K.dot(tf.diag(y[:,1]),x))
     h_btag_q = h_btag_anti_q[:,1]
@@ -22,12 +27,36 @@ def loss_kldiv(y_in,x):
     h_anti_h = h_anti_h / K.sum(h_anti_h,axis=0)
 
     return categorical_crossentropy(y, x) + \
-        kullback_leibler_divergence(h_anti_q, h_btag_q) + \
-        kullback_leibler_divergence(h_btag_h, h_anti_h)
+        kullback_leibler_divergence(h_btag_q, h_anti_q) + \
+        kullback_leibler_divergence(h_btag_h, h_anti_h)         
 
 #please always register the loss function here                                                                                              
 global_loss_list['loss_kldiv']=loss_kldiv
 
+def loss_antireg(y_in,x_in):
+    # h is the histogram vector "one hot encoded" (40 bins in this case), techically part of the "truth" y                         
+    h = y_in[:,0:NBINS]
+    y = y_in[:,NBINS:]
+    hpred = x_in[:,0:NBINS]
+    ypred = x_in[:,NBINS:]
+
+    return 0.0001*categorical_crossentropy(y, ypred) - 0.01*categorical_crossentropy(h, hpred)
+
+#please always register the loss function here                                                                                             
+global_loss_list['loss_antireg']=loss_antireg
+
+def loss_reg(y_in,x_in):
+    # h is the histogram vector "one hot encoded" (40 bins in this case), techically part of the "truth" y                         
+    h = y_in[:,0:NBINS]
+    y = y_in[:,NBINS:]
+    hpred = x_in[:,0:NBINS]
+    ypred = x_in[:,NBINS:]
+
+    return categorical_crossentropy(y, ypred) + categorical_crossentropy(h, hpred)
+
+#please always register the loss function here                                                                                             
+global_loss_list['loss_reg']=loss_reg
+ 
 def loss_NLL(y_true, x):
     """
     This loss is the negative log likelyhood for gaussian pdf.

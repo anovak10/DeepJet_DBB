@@ -1,8 +1,11 @@
+
 # coding: utf-8
+
+# In[ ]:
 
 import sys
 import os
-#import keras
+import keras
 #keras.backend.set_image_data_format('channels_last')
 import tensorflow as tf
 
@@ -13,6 +16,7 @@ from testing import testDescriptor
 from argparse import ArgumentParser
 from keras import backend as K
 from Losses import * #needed!
+import os
 import numpy as np
 import matplotlib
 matplotlib.use('agg')
@@ -22,8 +26,9 @@ from root_numpy import array2root
 import pandas as pd
 import h5py
 
-# Make all preformance plots
-def make_plots(test_files_dc, model, outputDir):
+sess = tf.InteractiveSession()
+
+def makeRoc(testd, model, outputDir):
     ## # summarize history for loss for training and test sample
     ## plt.figure(1)
     ## plt.plot(callbacks.history.history['loss'])
@@ -44,16 +49,49 @@ def make_plots(test_files_dc, model, outputDir):
     ## plt.legend(['train', 'test'], loc='upper left')
     ## plt.savefig(self.outputDir+'accuracycurve.pdf')
     ## plt.close(2)
+
+    print 'in makeRoc()'
     
-    # Get variables from the test files data collection
-    NENT = 10000000 #1 for all
-    features_val = [fval[:NENT] for fval in test_files_dc.getAllFeatures()]
-    labels_val=test_files_dc.getAllLabels()[0][:NENT,:]
-    weights_val=test_files_dc.getAllWeights()[0][:NENT]
-    spectators_val = test_files_dc.getAllSpectators()[0][:NENT,0,:]
-    print features_val
-    print labels_val
-    print spectators_val
+    # let's use all entries
+    NENT = 1
+    
+    print testd.nsamples
+    filelist=[]
+    i=0
+    for s in testd.samples:
+        spath = testd.getSamplePath(s)
+        print spath
+        filelist.append(spath)
+        h5File = h5py.File(spath)
+        features_val = [h5File['x%i'%j][()] for j in range(0, h5File['x_listlength'][()][0])]
+        predict_test_i = model.predict(features_val)
+        if i==0:
+            predict_test = predict_test_i
+        else:
+            predict_test = np.concatenate((predict_test,predict_test_i))
+        i+=1
+        print predict_test.shape
+
+    #features_val = [fval[::NENT] for fval in testd.getAllFeatures()]
+    labels_val=testd.getAllLabels()[0][::NENT,:]
+    #weights_val=testd.getAllWeights()[0][::NENT]
+    #spectators_val = testd.getAllSpectators()[0][::NENT,0,:]
+
+    # OH will be the truth "y" input to the network                                                                                   
+    # OH contains both, the actual truth per sample and the actual bin (one hot encoded) of the variable to be independent of 
+    #OH = np.zeros((labels_val.shape[0],42))
+    #for i in range(0,labels_val.shape[0]):
+    #    # bin of a (want to be independent of a)                                    
+    #    OH[i,int((spectators_val[i,2]-40.)/4.)]=1
+    #    # aimed truth (target)                                                                                                 
+    #    OH[i,40] = labels_val[i,0]
+    #    OH[i,41] = labels_val[i,1]
+
+
+    
+    #print features_val[0].shape
+                                                                                        
+    spectators_val = testd.getAllSpectators()[0][::NENT,0,:]
     df = pd.DataFrame(spectators_val)
     df.columns = ['fj_pt',
                   'fj_eta',
@@ -66,24 +104,25 @@ def make_plots(test_files_dc, model, outputDir):
                   'npfcands',
                   'ntracks',
                   'nsv']
+
     print(df.iloc[:10])
 
-    # Run a prediction based on the trained model
-    predict_test = model.predict(features_val)
+        
+    #predict_test = model.predict(features_val)
+    
+
+    #predict_tf = tf.convert_to_tensor(predict_test, np.float32)
+    #OH_tf = tf.convert_to_tensor(OH, np.float32)
+    #print('loss_kldiv',loss_kldiv(OH_tf,predict_tf).eval())
+
     df['fj_isH'] = labels_val[:,1]
-    df['fj_deepdoublec'] = predict_test[:,1]
-    # Cuts
+    df['fj_deepdoubleb'] = predict_test[:,1]
     df = df[(df.fj_sdmass > 40) & (df.fj_sdmass < 200) & (df.fj_pt > 300) &  (df.fj_pt < 2500)]
 
     print(df.iloc[:10])
 
-    # ROC curve from sklearn metrics
-    # http://scikit-learn.org/stable/modules/generated/sklearn.metrics.auc.html
-    # Double B
-    fpr, tpr, threshold = roc_curve(df['fj_isH'],df['fj_deepdoublec'])
-    # Boosted decision trees - benchmark
+    fpr, tpr, threshold = roc_curve(df['fj_isH'],df['fj_deepdoubleb'])
     dfpr, dtpr, threshold1 = roc_curve(df['fj_isH'],df['fj_doubleb'])
-    print threshold
 
     def find_nearest(array,value):
         idx = (np.abs(array-value)).argmin()
@@ -96,88 +135,82 @@ def make_plots(test_files_dc, model, outputDir):
         deepdoublebcuts[str(wp)] = threshold[idx] # threshold for deep double-b corresponding to ~1% mistag rate
         print('deep double-b > %f coresponds to %f%% QCD mistag rate'%(deepdoublebcuts[str(wp)] ,100*val))
 
-    # auc = computer area under a curve, auc(xs, ys)
     auc1 = auc(fpr, tpr)
     auc2 = auc(dfpr, dtpr)
 
-    # Compare ROC curves for deep learnening and BDT
     plt.figure()       
-    plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))
-    #plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(auc2*100))
+    plt.plot(tpr,fpr,label='deep double-b, auc = %.1f%%'%(auc1*100))
+    plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(auc2*100))
     plt.semilogy()
-    plt.xlabel("H(cc) efficiency")
+    plt.xlabel("H(bb) efficiency")
     plt.ylabel("QCD mistag rate")
     plt.ylim(0.001,1)
     plt.grid(True)
     plt.legend()
     plt.savefig(outputDir+"test.pdf")
     
-    # BDT discriminator plot
     plt.figure()
     bins = np.linspace(-1,1,70)
     plt.hist(df['fj_doubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
     plt.xlabel("BDT double-b")
     plt.legend(loc='upper left')
-#    plt.savefig(outputDir+"doubleb.pdf")
+    plt.savefig(outputDir+"doubleb.pdf")
+
+    print "saved doubleb.pdf?"
     
-    # Deep discriminator plot
     plt.figure()
     bins = np.linspace(0,1,70)
-    plt.hist(df['fj_deepdoublec'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_deepdoublec'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
-    plt.xlabel("deep double-c")
+    plt.hist(df['fj_deepdoubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+    plt.hist(df['fj_deepdoubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+    plt.xlabel("deep double-b")
     #plt.ylim(0.00001,1)
     #plt.semilogy()
     plt.legend(loc='upper left')
-    plt.savefig(outputDir+"deepdoublec.pdf")
+    plt.savefig(outputDir+"deepdoubleb.pdf")
     
-    # Momentum
     plt.figure()
     bins = np.linspace(0,2000,70)
     plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
     plt.xlabel(r'$p_{\mathrm{T}}$')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"pt.pdf")
     
-    # Soft drop mass
     plt.figure()
     bins = np.linspace(40,200,41)
     plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"msd.pdf")
     
-    # Soft drop mass for tagged H jets
     plt.figure()
     bins = np.linspace(40,200,41)
-    #df_passdoubleb = df[df.fj_doubleb > 0.9]
-    #plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    #plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
-    #plt.xlabel(r'$m_{\mathrm{SD}}$')
-    #plt.legend(loc='upper left')
-    #plt.savefig(outputDir+"msd_passdoubleb.pdf")
+    df_passdoubleb = df[df.fj_doubleb > 0.9]
+    plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD')
+    plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+    plt.xlabel(r'$m_{\mathrm{SD}}$')
+    plt.legend(loc='upper left')
+    plt.savefig(outputDir+"msd_passdoubleb.pdf")
     
-    # Mass sculpting plots
-    #plt.figure()
-    #bins = np.linspace(40,200,41)
-    #for wp, deepdoublebcut in reversed(sorted(deepdoublebcuts.iteritems())):
-    #    df_passdeepdoubleb = df[df.fj_deepdoublec > deepdoublebcut]
-    #    plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD %i%% mis-tag'%(float(wp)*100.))
-    #    #plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb) %s'%wp)
-    #plt.xlabel(r'$m_{\mathrm{SD}}$')
-    #plt.legend(loc='upper right')
-    #plt.savefig(outputDir+"msd_passdeepdoubleb.pdf")
+    plt.figure()
+    bins = np.linspace(40,200,41)
+    for wp, deepdoublebcut in reversed(sorted(deepdoublebcuts.iteritems())):
+        df_passdeepdoubleb = df[df.fj_deepdoubleb > deepdoublebcut]
+        plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD %i%% mis-tag'%(float(wp)*100.))
+        #plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb) %s'%wp)
+    plt.xlabel(r'$m_{\mathrm{SD}}$')
+    plt.legend(loc='upper right')
+    plt.savefig(outputDir+"msd_passdeepdoubleb.pdf")
     
-    #plt.figure()
-    #bins = np.linspace(40,200,41)
-    #plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_deepdoublec'],alpha=0.5,normed=True,label='pred. QCD')
-    #plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec'],alpha=0.5,normed=True,label='pred. H(c)')
-    #plt.xlabel(r'$m_{\mathrm{SD}}$')
-    #plt.legend(loc='upper left')
-    #plt.savefig(outputDir+"msd_weightdeepdoubleb.pdf")
+    plt.figure()
+    bins = np.linspace(40,200,41)
+    plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoubleb'])*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|QCD)')
+    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoubleb']*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(bb)|QCD)')
+    plt.xlabel(r'$m_{\mathrm{SD}}$')
+    plt.legend(loc='upper left')
+    plt.savefig(outputDir+"msd_weightdeepdoubleb_QCD.pdf")
 
     plt.figure()
     bins = np.linspace(40,200,41)
@@ -225,52 +258,64 @@ def make_plots(test_files_dc, model, outputDir):
 
     return df, features_val
 
-os.environ['CUDA_VISIBLE_DEVICES'] = ''
+#os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
-
-#########
-#################
-# Set lcoations
-inputDir = 'out_train2/'
+#inputDir = '../independence/example/train_all_b1024_symloss0p5/'
+inputDir = 'train_resnet_sv_b1024/'
 inputModel = '%s/KERAS_check_best_model.h5'%inputDir
-outputDir = inputDir.replace('train','eval') 
+inputWeights = '%s/KERAS_check_best_model_weights.h5' %inputDir
+outputDir = inputDir.replace('train','out2') 
+
+from DeepJet_models_removals import deep_model_removal_sv
+
+inputDataCollection = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_sv_test/dataCollection.dc'
+inputTrainData = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_sv_train_val/dataCollection.dc'
+
+from DataCollection import DataCollection
+
+train_data=DataCollection()
+train_data.readFromFile(inputDataCollection)
+#train_data.useweights=useweights
+
+testd=DataCollection()
+testd.readFromFile(inputDataCollection)
+
+shapes=train_data.getInputShapes()
+train_inputs = []
+for s in shapes:
+    train_inputs.append(keras.layers.Input(shape=s))
+   
+
+model = deep_model_removal_sv(train_inputs,train_data.getNClassificationTargets(),train_data.getNRegressionTargets())
+model.load_weights(inputWeights)
 
 # test data:
-inputDataCollection = '/eos/user/a/anovak/DeepJet/convertFromRoot/test2/dataCollection.dc'
-#inputDataCollection = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_pf_cpf_sv_test/dataCollection.dc'
+
 # training data:
 #inputDataCollection = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_pf_cpf_sv_train_val/dataCollection.dc'
 
-# Check if dir works
 if os.path.isdir(outputDir):
     raise Exception('output directory must not exists yet')
 else: 
     os.mkdir(outputDir)
-
-# Load model
-model=load_model(inputModel, custom_objects=global_loss_list)
+#from DeepJet_models_removals import Slicer1D
+#model=load_model(inputModel, custom_objects={'global_loss_list':global_loss_list,'Slicer1D':Slicer1D})
+    
 #intermediate_output = intermediate_layer_model.predict(data)
+
 #print(model.summary())
     
-# Load data    
 from DataCollection import DataCollection
     
-test_files_dc=DataCollection()
-test_files_dc.readFromFile(inputDataCollection)
 
-# Make plots    
-df = make_plots(test_files_dc, model, outputDir)
+    
+df, features_val = makeRoc(testd, model, outputDir)
 
 
-##############################################
-##############################################
-############################################
-# Make loss plots
-# let's use only first 10000000 entries
-NENT = 10000000
-features_val = [fval[:NENT] for fval in test_files_dc.getAllFeatures()]
+# In[ ]:
 
 print model.summary()
+
 
 def _byteify(data, ignore_dicts = False):
     # if this is a unicode string, return its string representation
@@ -308,7 +353,4 @@ plt.plot(loss, label='train')
 plt.legend()
 plt.xlabel('epoch')
 plt.ylabel('loss')
-plt.savefig("%sloss.pdf"%outputDir)
-
-
-
+plt.savefig("%s/loss.pdf"%outputDir)

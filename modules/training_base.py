@@ -110,12 +110,14 @@ class training_base(object):
     def modelSet(self):
         return not self.keras_model==None
         
-    def setModel(self,model,**modelargs):
+    def setModel(self,model,datasets = None, removedVars = None, **modelargs):
         if len(self.keras_inputs)<1:
             raise Exception('setup data first') #can't happen
         self.keras_model=model(self.keras_inputs,
                                self.train_data.getNClassificationTargets(),
                                self.train_data.getNRegressionTargets(),
+                               datasets,
+                               removedVars,
                                **modelargs)
     
     def saveCheckPoint(self,addstring=''):
