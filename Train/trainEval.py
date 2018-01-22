@@ -30,7 +30,7 @@ class MyClass:
         self.inputDataCollection = ''
         self.outputDir = ''
 
-import setGPU
+#import setGPU
 #os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 from training_base import training_base
@@ -42,12 +42,12 @@ trainDataCollection_cpf_sv = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_cpf_
 trainDataCollection_sv='/cms-sc17/convert_20170717_ak8_deepDoubleB_db_sv_train_val/dataCollection.dc'
 
 trainDataCollection_final = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_cpf_sv_reduced_train_val/dataCollection.dc'
-
+trainDataCollection_final ='/afs/cern.ch/work/a/anovak/public/Jan19_train_full/dataCollection.dc'
 testDataCollection_pf_cpf_sv = trainDataCollection_pf_cpf_sv.replace("train_val","test")
 testDataCollection_cpf_sv = trainDataCollection_cpf_sv.replace("train_val","test")
 testDataCollection_sv = trainDataCollection_sv.replace("train_val","test")
 
-testDataCollection_final = trainDataCollection_final.replace("train_val","test")
+testDataCollection_final = trainDataCollection_final.replace("train","test")
 
 sampleDatasets_pf_cpf_sv = ["db","pf","cpf","sv"]
 sampleDatasets_cpf_sv = ["db","cpf","sv"]
@@ -57,8 +57,8 @@ sampleDatasets_sv = ["db","sv"]
 removedVars = None
 
 #Toggle training or eval
-TrainBool = True
-EvalBool = False
+TrainBool = False
+EvalBool = True
 
 #Toggle to load model directly (True) or load weights (False)
 LoadModel = False
@@ -69,7 +69,7 @@ from eval_funcs import loadModel, makeRoc, _byteify, makeLossPlot, makeCompariso
 trainDir = "train_finalTest"
 inputTrainDataCollection = trainDataCollection_final
 inputTestDataCollection = testDataCollection_final
-inputDataset = sampleDatasets_cpf_sv
+inputDataset = sampleDatasets_pf_cpf_sv
 lossFunction = 'categorical_crossentropy'
 
 
@@ -103,7 +103,7 @@ if TrainBool:
 
         train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
         printLayerInfosAndWeights(train.keras_model)
-        model,history,callbacks = train.trainModel(nepochs=200,
+        model,history,callbacks = train.trainModel(nepochs=50,
                                                    batchsize=1024,
                                                    stop_patience=1000,
                                                    lr_factor=0.7,

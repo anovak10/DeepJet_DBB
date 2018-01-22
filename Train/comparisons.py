@@ -28,7 +28,7 @@ class MyClass:
         self.inputDataCollection = ''
         self.outputDir = ''
 
-import setGPU
+#import setGPU
 #os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 from training_base import training_base
@@ -39,7 +39,8 @@ trainDataCollection_pf_cpf_sv = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_p
 trainDataCollection_cpf_sv = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_cpf_sv_train_val/dataCollection.dc'
 trainDataCollection_sv='/cms-sc17/convert_20170717_ak8_deepDoubleB_db_sv_train_val/dataCollection.dc'
 
-trainDataCollection_final = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_cpf_sv_reduced_train_val/dataCollection.dc'
+#trainDataCollection_final = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_cpf_sv_reduced_train_val/dataCollection.dc'
+trainDataCollection_final ='/afs/cern.ch/work/a/anovak/public/Jan19_train_full/dataCollection.dc'
 
 testDataCollection_pf_cpf_sv = trainDataCollection_pf_cpf_sv.replace("train_val","test")
 testDataCollection_cpf_sv = trainDataCollection_cpf_sv.replace("train_val","test")
@@ -74,6 +75,15 @@ compTrainDirs = ["train_conv_db_cpf_sv_removals/","../independence/example/train
 compDatasets = [sampleDatasets_cpf_sv,sampleDatasets_cpf_sv,sampleDatasets_cpf_sv]    
 compTrainDataCollections = [trainDataCollection_cpf_sv,trainDataCollection_cpf_sv,trainDataCollection_final]
 compTestDataCollections = [testDataCollection_cpf_sv,testDataCollection_cpf_sv,testDataCollection_final]
+
+compModels = [conv_model_final]
+compNames = ["finalTest"]
+compRemovals = [None]
+compLoadModels = [False]
+compTrainDirs = ["train_finalTest"]
+compDatasets = [sampleDatasets_pf_cpf_sv]    
+compTrainDataCollections = [trainDataCollection_final]
+compTestDataCollections = [testDataCollection_final]
 
 #for batch in batches:
     #for b in bins:
@@ -115,5 +125,7 @@ for i in range(len(compModels)):
 
     models.append(curModel)
     testds.append(testd)
+    #makeComparisonPlots(testd,curModel,compNames,compareDir)
+    print testd
 
 makeComparisonPlots(testds,models,compNames,compareDir)

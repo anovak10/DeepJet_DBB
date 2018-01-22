@@ -91,6 +91,9 @@ def conv_model_final(inputs, num_classes, num_regclasses, datasets, removedVars 
     normalizedInputs = []
 
     for i in range(len(inputs)):
+	print i
+	print datasets[i]
+	print inputs[i]
         normedLayer = BatchNormalization(momentum=0.3,name = '%s_input_batchnorm'%datasets[i])(inputs[i])
         normalizedInputs.append(normedLayer)
 
