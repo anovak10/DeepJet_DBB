@@ -74,6 +74,8 @@ The preparation for the training consists of the following steps
   ```
   cd DeepJet/convertFromRoot
   ./convertFromRoot.py -i /path/to/the/root/ntuple/list_of_root_files.txt -o /output/path/that/needs/some/disk/space -c TrainData_myclass
+  #example
+  python convertFromRoot.py -i train_list.txt -o Jan23_train_full_BB -c TrainData_deepDoubleB_db_pf_cpf_sv:wq
   ```
   
   This step can take a while.
