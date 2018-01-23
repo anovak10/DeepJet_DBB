@@ -525,7 +525,7 @@ class TrainData_deepDoubleB_db_pf_cpf_sv(TrainData_deepDoubleB):
             # the truth class 'fj_isNonBB'
             notremoves=weighter.createNotRemoveIndices(Tuple)
             #undef=Tuple[self.undefTruth]
-            notremoves-=undef
+            #notremoves-=undef
         
         if self.weight:
             weights=weighter.getJetWeights(Tuple)
@@ -548,7 +548,7 @@ class TrainData_deepDoubleB_db_pf_cpf_sv(TrainData_deepDoubleB):
         x_pf=x_pf[undef > 0]
         x_cpf=x_cpf[undef > 0]
         alltruth=alltruth[undef > 0]
-        #notremoves=notremoves[undef > 0]
+        notremoves=notremoves[undef > 0]
 
         # remove the entries to get same jet shapes
         if self.remove:

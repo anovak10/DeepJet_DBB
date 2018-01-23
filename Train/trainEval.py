@@ -30,7 +30,7 @@ class MyClass:
         self.inputDataCollection = ''
         self.outputDir = ''
 
-import setGPU
+#import setGPU
 #os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 from training_base import training_base
@@ -57,8 +57,8 @@ sampleDatasets_sv = ["db","sv"]
 removedVars = None
 
 #Toggle training or eval
-TrainBool = True
-EvalBool = False
+TrainBool = False
+EvalBool = True
 
 #Toggle to load model directly (True) or load weights (False)
 LoadModel = False
@@ -112,6 +112,14 @@ if TrainBool:
                                                    lr_cooldown=2,
                                                    lr_minimum=0.00000001,
                                                    maxqsize=100)
+
+from DeepJet_models_final import conv_model_final as trainingModel
+from eval_funcs import loadModel, makeRoc, _byteify, makeLossPlot, makeComparisonPlots
+trainDir = "out_train_simple"
+inputTrainDataCollection = trainDataCollection_final
+inputTestDataCollection = testDataCollection_final
+inputDataset = sampleDatasets_pf_cpf_sv
+lossFunction = 'categorical_crossentropy'
 
 if EvalBool:
 
