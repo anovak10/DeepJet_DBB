@@ -14,8 +14,8 @@ class TrainData_deepDoubleB(TrainData):
         
         #define truth:
         self.undefTruth=['isUndefined']
-        self.truthclasses=['fj_isNonBB','fj_isBB']
-        self.referenceclass='fj_isNonBB' ## used for pt reshaping
+        self.truthclasses=['fj_isNonCC','fj_isCC']
+        self.referenceclass='fj_isNonCC' ## used for pt reshaping
 
         self.registerBranches(self.truthclasses)
         self.registerBranches(['fj_pt','fj_sdmass'])
@@ -46,14 +46,14 @@ class TrainData_deepDoubleB(TrainData):
     ## categories to use for training     
     def reduceTruth(self, tuple_in):
         import numpy
-        self.reducedtruthclasses=['fj_isNonBB','fj_isBB']
+        self.reducedtruthclasses=['fj_isNonCC','fj_isCC']
         if tuple_in is not None:
-            q = tuple_in['fj_isNonBB'] * tuple_in['fj_isQCD']
-            #q = tuple_in['fj_isNonBB'] * tuple_in['sample_isQCD'] * tuple_in['fj_isQCD']
+            q = tuple_in['fj_isNonCC'] * tuple_in['fj_isQCD']
+            #q = tuple_in['fj_isNonCC'] * tuple_in['sample_isQCD'] * tuple_in['fj_isQCD']
             q = q.view(numpy.ndarray)
             #t = tuple_in['fj_isTop'].view(numpy.ndarray)
             #z = tuple_in['fj_isZ'].view(numpy.ndarray)
-            #h = tuple_in['fj_isBB'] * tuple_in['fj_isH']
+            #h = tuple_in['fj_isCC'] * tuple_in['fj_isH']
             #w = tuple_in['fj_isW'].view(numpy.ndarray)
             h = tuple_in['fj_isH']
             h = h.view(numpy.ndarray)
@@ -186,9 +186,9 @@ class TrainData_deepDoubleB_db_sv(TrainData_deepDoubleB):
         #truthtuple =  Tuple[self.truthclasses]
         alltruth=self.reduceTruth(Tuple)        
         print('sample_isQCD',Tuple['sample_isQCD'])
-        print('fj_isNonBB',Tuple['fj_isNonBB'])
-        print('fj_isBB',Tuple['fj_isBB'])
-        undef=Tuple['fj_isNonBB'] * Tuple['sample_isQCD'] * Tuple['fj_isQCD'] + Tuple['fj_isBB'] * Tuple['fj_isH']
+        print('fj_isNonCC',Tuple['fj_isNonCC'])
+        print('fj_isCC',Tuple['fj_isCC'])
+        undef=Tuple['fj_isNonCC'] * Tuple['sample_isQCD'] * Tuple['fj_isQCD'] + Tuple['fj_isCC'] * Tuple['fj_isH']
         undef=numpy.sum(alltruth,axis=1)
         weights=weights[undef > 0]
         x_glb=x_glb[undef > 0]
@@ -327,7 +327,7 @@ class TrainData_deepDoubleB_db(TrainData_deepDoubleB):
         alltruth=alltruth[undef > 0]
         notremoves=notremoves[undef > 0]
 
-        undef=Tuple['fj_isNonBB'] * Tuple['sample_isQCD'] * Tuple['fj_isQCD'] + Tuple['fj_isBB'] * Tuple['fj_isH']
+        undef=Tuple['fj_isNonCC'] * Tuple['sample_isQCD'] * Tuple['fj_isQCD'] + Tuple['fj_isCC'] * Tuple['fj_isH']
 
         # remove the entries to get same jet shapes
         if self.remove:

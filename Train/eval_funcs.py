@@ -27,7 +27,7 @@ import pandas as pd
 import h5py
 from Losses import NBINS
 
-sess = tf.InteractiveSession()
+sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=True))
 
 def loadModel(inputDir,trainData,model,LoadModel,sampleDatasets=None,removedVars=None):
     inputModel = '%s/KERAS_check_best_model.h5'%inputDir

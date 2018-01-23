@@ -30,7 +30,7 @@ class MyClass:
         self.inputDataCollection = ''
         self.outputDir = ''
 
-#import setGPU
+import setGPU
 #os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 from training_base import training_base
@@ -57,8 +57,8 @@ sampleDatasets_sv = ["db","sv"]
 removedVars = None
 
 #Toggle training or eval
-TrainBool = False
-EvalBool = True
+TrainBool = True
+EvalBool = False
 
 #Toggle to load model directly (True) or load weights (False)
 LoadModel = False
@@ -66,7 +66,7 @@ LoadModel = False
 #select model and eval functions
 from DeepJet_models_final import conv_model_final as trainingModel
 from eval_funcs import loadModel, makeRoc, _byteify, makeLossPlot, makeComparisonPlots
-trainDir = "train_finalTest"
+trainDir = "gpu_train_finalTest"
 inputTrainDataCollection = trainDataCollection_final
 inputTestDataCollection = testDataCollection_final
 inputDataset = sampleDatasets_pf_cpf_sv
@@ -102,8 +102,8 @@ if TrainBool:
                                                    maxqsize=100)
 
         train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
-        printLayerInfosAndWeights(train.keras_model)
-        model,history,callbacks = train.trainModel(nepochs=50,
+        #printLayerInfosAndWeights(train.keras_model)
+        model,history,callbacks = train.trainModel(nepochs=100,
                                                    batchsize=1024,
                                                    stop_patience=1000,
                                                    lr_factor=0.7,
