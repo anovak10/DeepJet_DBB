@@ -688,7 +688,7 @@ class TrainData_deepDoubleB_db_pf_cpf(TrainData_deepDoubleB):
         import numpy
         import ROOT
         
-        fileTimeOut(filename,120) #give eos 2 minutes to recover
+        fileTimeOut(filename,180) #give eos 2 minutes to recover
         rfile = ROOT.TFile(filename)
         tree = rfile.Get("deepntuplizer/tree")
         self.nsamples=tree.GetEntries()

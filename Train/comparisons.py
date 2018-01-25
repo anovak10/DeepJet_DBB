@@ -40,20 +40,23 @@ trainDataCollection_cpf_sv = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_cpf_
 trainDataCollection_sv='/cms-sc17/convert_20170717_ak8_deepDoubleB_db_sv_train_val/dataCollection.dc'
 
 #trainDataCollection_final = '/cms-sc17/convert_20170717_ak8_deepDoubleB_db_cpf_sv_reduced_train_val/dataCollection.dc'
-trainDataCollection_final ='/afs/cern.ch/work/a/anovak/public/Jan19_train_full/dataCollection.dc'
+#trainDataCollection_final_BB ='/afs/cern.ch/work/a/anovak/public/Jan23_train_full_BB/dataCollection.dc'
+trainDataCollection_final ='/afs/cern.ch/work/a/anovak/public/Jan24_train_full_CC/dataCollection.dc'
+trainDataCollection_final_BB ='/afs/cern.ch/work/a/anovak/public/Jan24_train_full_CC/dataCollection.dc'
 
 testDataCollection_pf_cpf_sv = trainDataCollection_pf_cpf_sv.replace("train_val","test")
 testDataCollection_cpf_sv = trainDataCollection_cpf_sv.replace("train_val","test")
 testDataCollection_sv = trainDataCollection_sv.replace("train_val","test")
 
-testDataCollection_final = trainDataCollection_final.replace("train_val","test")
-
+testDataCollection_final = trainDataCollection_final.replace("train","test")
+testDataCollection_final_BB = trainDataCollection_final.replace("train","test")
 
 sampleDatasets_pf_cpf_sv = ["db","pf","cpf","sv"]
 sampleDatasets_cpf_sv = ["db","cpf","sv"]
 sampleDatasets_sv = ["db","sv"]
 
-removedVars = [[],range(0,22),[0,1,2,3,4,5,6,7,8,9,10,13]]
+#removedVars = [[],range(0,22),[0,1,2,3,4,5,6,7,8,9,10,13]]
+removedVars = None
 
 from DeepJet_models_removals import deep_model_removals as trainingModel
 from eval_funcs import loadModel, makeRoc, _byteify, makeLossPlot, makeComparisonPlots
@@ -67,23 +70,26 @@ batches = [1024,8192]
 
 compareDir = "finalTestComparisons/"
 
-compModels = [conv_model_removals,conv_model_removals,conv_model_final]
-compNames = ["baseline","lambdaLayers","finalTest"]
+#compModels = [conv_model_removals,conv_model_removals,conv_model_final]
+compModels = [conv_model_final,conv_model_final]
+compNames = ["conv_model_final", "conv_model_final_BB"]
 compRemovals = [removedVars,removedVars,None]
 compLoadModels = [False,False,False]
-compTrainDirs = ["train_conv_db_cpf_sv_removals/","../independence/example/train_conv_db_cpf_sv_removals_lossfunc_nbins40_b8192","../independence/example/train_finalTest_nbins40_b8192"]
-compDatasets = [sampleDatasets_cpf_sv,sampleDatasets_cpf_sv,sampleDatasets_cpf_sv]    
-compTrainDataCollections = [trainDataCollection_cpf_sv,trainDataCollection_cpf_sv,trainDataCollection_final]
-compTestDataCollections = [testDataCollection_cpf_sv,testDataCollection_cpf_sv,testDataCollection_final]
+#compTrainDirs = ["train_conv_db_cpf_sv_removals/","../independence/example/train_conv_db_cpf_sv_removals_lossfunc_nbins40_b8192","../independence/example/train_finalTest_nbins40_b8192"]
+compTrainDirs = ["/eos/user/a/anovak/DeepJet/Train/train_finalTest/", "/eos/user/a/anovak/DeepJet/Train/gpu_train_finalTest/"]
+#compTrainDirs = ["/eos/user/a/anovak/DeepJet/Train/train_finalTest/", "/eos/user/a/anovak/DeepJet/Train/train_finalTest/"]
+compDatasets = [sampleDatasets_pf_cpf_sv, sampleDatasets_pf_cpf_sv]    
+compTrainDataCollections = [trainDataCollection_final, trainDataCollection_final_BB]
+compTestDataCollections = [testDataCollection_final, testDataCollection_final]
 
-compModels = [conv_model_final]
-compNames = ["finalTest"]
-compRemovals = [None]
-compLoadModels = [False]
-compTrainDirs = ["train_finalTest"]
-compDatasets = [sampleDatasets_pf_cpf_sv]    
-compTrainDataCollections = [trainDataCollection_final]
-compTestDataCollections = [testDataCollection_final]
+#compModels = [conv_model_final]
+#compNames = ["finalTest"]
+#compRemovals = [None]
+#compLoadModels = [False]
+#compTrainDirs = ["train_finalTest"]
+#compDatasets = [sampleDatasets_pf_cpf_sv]    
+#compTrainDataCollections = [trainDataCollection_final]
+#compTestDataCollections = [testDataCollection_final]
 
 #for batch in batches:
     #for b in bins:
@@ -125,7 +131,12 @@ for i in range(len(compModels)):
 
     models.append(curModel)
     testds.append(testd)
+    #print testd
+    #print testds
     #makeComparisonPlots(testd,curModel,compNames,compareDir)
-    print testd
-
+    
+print testds
+print models
+print compNames
+print compareDir
 makeComparisonPlots(testds,models,compNames,compareDir)

@@ -319,7 +319,7 @@ def makeLossPlot(inputDir, outputDir):
     plt.ylabel('loss')
     plt.savefig("%s/loss.pdf"%outputDir)
     
-def makeComparisonPlots(testd, models,names, outputDir):
+def makeComparisonPlots(testds, models,names, outputDir):
 
 
 # let's use all entries
@@ -329,7 +329,9 @@ def makeComparisonPlots(testd, models,names, outputDir):
     filelist=[]
 
     predictions = []
-    for model in models:
+#    print models
+#    print testd
+    for model, testd in zip(models, testds):
         first = True
         for s in testd.samples:
         #for s in range(1):
@@ -409,7 +411,7 @@ def makeComparisonPlots(testd, models,names, outputDir):
 
     plt.figure()       
     for i in range(len(models)):
-        plt.plot(tprs[i],fprs[i],label='deep double-b %s, auc = %.1f%%'% (names[i],(aucs[i]*100)))
+        plt.plot(tprs[i],fprs[i],label='deep %s, auc = %.1f%%'% (names[i],(aucs[i]*100)))
 
     plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(aucBDT*100))
     plt.semilogy()
