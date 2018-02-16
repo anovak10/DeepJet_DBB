@@ -44,8 +44,8 @@ class DataCollection(object):
         self.dataclass=TrainData() #for future implementations
         self.weighter=Weighter()
         self.weightsfraction=0.05
-        self.maxConvertThreads=2
-        self.maxFilesOpen=5
+        self.maxConvertThreads=5
+        self.maxFilesOpen=10
         self.means=None
         self.classweights={}
 

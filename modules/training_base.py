@@ -61,10 +61,15 @@ class training_base(object):
         
         isNewTraining=True
         if os.path.isdir(self.outputDir):
-            var = raw_input('output dir exists. To recover a training, please type "yes"\n')
-            if not var == 'yes':
-                raise Exception('output directory must not exists yet')
-            isNewTraining=False     
+            var = raw_input('Output directory exists. To recover a training, please type "yes"\n To overwrite previous training, please type "cont"\n')
+            if var == 'yes':
+                #
+                isNewTraining=False   
+            elif var == 'cont'  :
+                #os.rmdir(self.outputDir)
+                shutil.rmtree(self.outputDir)
+            else:
+                raise Exception('Choose one motherfucker')
         else:
             os.mkdir(self.outputDir)
         self.outputDir = os.path.abspath(self.outputDir)

@@ -223,7 +223,7 @@ def deep_model_doubleb_sv(inputs, num_classes,num_regclasses, **kwargs):
     return model
 
 
-def deep_model_doubleb(inputs, num_classes,num_regclasses, **kwargs):
+def deep_model_doubleb(inputs, num_classes, num_regclasses, datasets, removedVars = None, **kwargs):
 
     
     input_db = inputs[0]

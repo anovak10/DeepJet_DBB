@@ -203,6 +203,7 @@ class Weighter(object):
             
         
 
+
         for jet in iter(Tuple[self.Axixandlabel]):
             binX =  self.getBin(jet[self.nameX], self.axisX)
             binY =  self.getBin(jet[self.nameY], self.axisY)
@@ -223,8 +224,8 @@ class Weighter(object):
                         xaverage[index]+=jet[self.nameX]
                         yaverage[index]+=jet[self.nameY]
                         norm[index]+=1
-            
-                    counter=counter+1            
+                   # if counter
+            counter=counter+1            
         
             
         if not len(notremove) == counter:

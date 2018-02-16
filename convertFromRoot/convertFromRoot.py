@@ -13,6 +13,7 @@ convertFromRoot is a small program that converts the root files produced with th
 import sys
 import os
 
+import argcomplete
 from argparse import ArgumentParser
 from pdb import set_trace
 import logging
@@ -42,22 +43,23 @@ def main(argv=None):
     #try: 
         # setup option parser
     from TrainData import TrainData
-    from TrainData_deepCSV import TrainData_deepCSV
-    from TrainData_deepConvCSV import TrainData_deepConvCSV
-    from TrainData_deepCMVA import TrainData_deepCMVA
-    from TrainData_deepCSV_PF import TrainData_deepCSV_PF,TrainData_deepCSV_miniPF,TrainData_deepCSV_microPF,TrainData_deepCSV_softL_PF,TrainData_deepCSV_PF_rec
-    from TrainData_deepCSV_PF_Reg import TrainData_deepCSV_PF_Reg
-    from TrainData_deepJet_Reg import TrainData_deepJet_Reg, TrainData_PF_Reg
-    from TrainData_deepCSV_PF_binned import TrainData_deepCSV_PF_Binned
-    from TrainData_deepFlavour import TrainData_deepFlavour_FT_reg_noScale,TrainData_deepFlavour_QGOnly_reg,TrainData_deepFlavour_FT,TrainData_deepFlavour_FT_reg,TrainData_deepFlavour_FT_map,TrainData_deepFlavour_FT_map_reg,TrainData_image
-    from TrainData_FatJet import TrainData_FatJet_Test
-    from TrainData_PT_recur import TrainData_PT_recur, TrainData_QG_simple, TrainData_recurrent_fullTruth
-    from TrainData_deepCSV_int import TrainData_deepCSV_int,TrainData_deepCSV_conv
-    from TrainData_deepAK8 import TrainData_AK8Jet_init 
-    from TrainData_deepDoubleB_Test import TrainData_deepDoubleB_db, TrainData_deepDoubleB_db_sv, TrainData_deepDoubleB_db_cpf_sv, TrainData_deepDoubleB_db_cpf_sv_reduced,  TrainData_deepDoubleB_db_pf_cpf_sv, TrainData_deepDoubleB_simple10, TrainData_deepDoubleB_db_3label, TrainData_deepDoubleB_db_sv_3label, TrainData_deepDoubleB_db_cpf_sv_3label, TrainData_deepDoubleB_db_pf_cpf_sv_3label
-#    from TrainData_lhcTagger import TrainData_lhcTagger_all
+    #from TrainData_deepCSV import TrainData_deepCSV
+    #from TrainData_deepConvCSV import TrainData_deepConvCSV
+    #from TrainData_deepCMVA import TrainData_deepCMVA
+    #from TrainData_deepCSV_PF import TrainData_deepCSV_PF,TrainData_deepCSV_miniPF,TrainData_deepCSV_microPF,TrainData_deepCSV_softL_PF,TrainData_deepCSV_PF_rec
+    #from TrainData_deepCSV_PF_Reg import TrainData_deepCSV_PF_Reg
+    #from TrainData_deepJet_Reg import TrainData_deepJet_Reg, TrainData_PF_Reg
+    #from TrainData_deepCSV_PF_binned import TrainData_deepCSV_PF_Binned
+    #from TrainData_deepFlavour import TrainData_deepFlavour_FT_reg_noScale,TrainData_deepFlavour_QGOnly_reg,TrainData_deepFlavour_FT,TrainData_deepFlavour_FT_reg,TrainData_deepFlavour_FT_map,TrainData_deepFlavour_FT_map_reg,TrainData_image
+    #from TrainData_FatJet import TrainData_FatJet_Test
+    #from TrainData_PT_recur import TrainData_PT_recur, TrainData_QG_simple, TrainData_recurrent_fullTruth
+    #from TrainData_deepCSV_int import TrainData_deepCSV_int,TrainData_deepCSV_conv
+    #rom TrainData_deepAK8 import TrainData_AK8Jet_init 
+    #from TrainData_deepDoubleB_Test import TrainData_deepDoubleB_db, TrainData_deepDoubleB_db_sv, TrainData_deepDoubleB_db_cpf_sv, TrainData_deepDoubleB_db_cpf_sv_reduced,  TrainData_deepDoubleB_db_pf_cpf_sv, TrainData_deepDoubleB_simple10, TrainData_deepDoubleB_db_3label, TrainData_deepDoubleB_db_sv_3label, TrainData_deepDoubleB_db_cpf_sv_3label, TrainData_deepDoubleB_db_pf_cpf_sv_3label
+    from TrainData_deepDoubleC import TrainData_deepDoubleC_db, TrainData_deepDoubleC_db_cpf_sv_reduced,  TrainData_deepDoubleC_db_pf_cpf_sv
+    from TrainData_deepDoubleC import TrainData_deepDoubleC_db_multi, TrainData_deepDoubleC_db_cpf_sv_reduced_multi,  TrainData_deepDoubleC_db_pf_cpf_sv_multi
     
-    class_options = [
+    """class_options = [  #kept for historical purposes
         TrainData_deepCSV,
         TrainData_deepConvCSV,
         TrainData_deepCMVA,
@@ -93,8 +95,14 @@ def main(argv=None):
         TrainData_deepDoubleB_db_sv_3label,
         TrainData_deepDoubleB_db_cpf_sv_3label,
         TrainData_deepDoubleB_db_pf_cpf_sv_3label,
-        TrainData_deepDoubleB_simple10,
-        #TrainData_lhcTagger_all
+        TrainData_deepDoubleB_simple10 
+        ]"""
+    class_options = [TrainData_deepDoubleC_db, 
+        TrainData_deepDoubleC_db_cpf_sv_reduced,
+        TrainData_deepDoubleC_db_pf_cpf_sv,
+        TrainData_deepDoubleC_db_multi, 
+        TrainData_deepDoubleC_db_cpf_sv_reduced_multi,  
+        TrainData_deepDoubleC_db_pf_cpf_sv_multi 
         ]
     class_options = dict((str(i).split("'")[1].split('.')[-1], i) for i in class_options)
 
@@ -113,6 +121,7 @@ def main(argv=None):
     parser.add_argument("-q", action='store_true', help='quiet')
     
     # process options
+    #argcomplete.autocomplete(parser)
     args=parser.parse_args()
     infile=args.i
     outPath=args.o
