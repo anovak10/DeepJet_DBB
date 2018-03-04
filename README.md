@@ -2,7 +2,7 @@ DeepJet: Repository for training and evaluation of deep neural networks for HEP
 ===============================================================================
  ----  Deep Double C tagger modifications ----
  ----  gpu_env modified to run on Maxwell Cluster at DESY  ----
-
+ ----  Modification to the class plotter and to CNN output layer  ----
 
 Setup (CERN)
 ==========
