@@ -58,7 +58,7 @@ def main(argv=None):
     #from TrainData_deepDoubleB_Test import TrainData_deepDoubleB_db, TrainData_deepDoubleB_db_sv, TrainData_deepDoubleB_db_cpf_sv, TrainData_deepDoubleB_db_cpf_sv_reduced,  TrainData_deepDoubleB_db_pf_cpf_sv, TrainData_deepDoubleB_simple10, TrainData_deepDoubleB_db_3label, TrainData_deepDoubleB_db_sv_3label, TrainData_deepDoubleB_db_cpf_sv_3label, TrainData_deepDoubleB_db_pf_cpf_sv_3label
     from TrainData_deepDoubleC import TrainData_deepDoubleC_db, TrainData_deepDoubleC_db_cpf_sv_reduced,  TrainData_deepDoubleC_db_pf_cpf_sv
     from TrainData_deepDoubleC import TrainData_deepDoubleC_db_multi, TrainData_deepDoubleC_db_cpf_sv_reduced_multi,  TrainData_deepDoubleC_db_pf_cpf_sv_multi
-    
+    from TrainData_deepDoubleC import TrainData_deepDoubleCvB_db,  TrainData_deepDoubleCvB_db_pf_cpf_sv,  TrainData_deepDoubleCvB_db_cpf_sv_reduced
     """class_options = [  #kept for historical purposes
         TrainData_deepCSV,
         TrainData_deepConvCSV,
@@ -102,7 +102,10 @@ def main(argv=None):
         TrainData_deepDoubleC_db_pf_cpf_sv,
         TrainData_deepDoubleC_db_multi, 
         TrainData_deepDoubleC_db_cpf_sv_reduced_multi,  
-        TrainData_deepDoubleC_db_pf_cpf_sv_multi 
+        TrainData_deepDoubleC_db_pf_cpf_sv_multi ,
+        TrainData_deepDoubleCvB_db,  
+        TrainData_deepDoubleCvB_db_pf_cpf_sv,  
+        TrainData_deepDoubleCvB_db_cpf_sv_reduced
         ]
     class_options = dict((str(i).split("'")[1].split('.')[-1], i) for i in class_options)
 
