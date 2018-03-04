@@ -10,7 +10,7 @@ import keras
 import tensorflow as tf
 
 # In[3]:
-from keras.losses import kullback_leibler_divergence, categorical_crossentropy
+from keras.losses import kullback_leibler_divergence, categorical_crossentropy, binary_crossentropy
 from keras.models import load_model, Model
 from testing import testDescriptor
 from argparse import ArgumentParser
@@ -53,28 +53,8 @@ def loadModel(inputDir,trainData,model,LoadModel,sampleDatasets=None,removedVars
 
     return evalModel
 
+
 def makeRoc(testd, model, outputDir):
-    ## # summarize history for loss for training and test sample
-    ## plt.figure(1)
-    ## plt.plot(callbacks.history.history['loss'])
-    ## plt.plot(callbacks.history.history['val_loss'])
-    ## plt.title('model loss')
-    ## plt.ylabel('loss')
-    ## plt.xlabel('epoch')
-    ## plt.legend(['train', 'test'], loc='upper left')
-    ## plt.savefig(self.outputDir+'learningcurve.pdf') 
-    ## plt.close(1)
-
-    ## plt.figure(2)
-    ## plt.plot(callbacks.history.history['acc'])
-    ## plt.plot(callbacks.history.history['val_acc'])
-    ## plt.title('model accuracy')
-    ## plt.ylabel('acc')
-    ## plt.xlabel('epoch')
-    ## plt.legend(['train', 'test'], loc='upper left')
-    ## plt.savefig(self.outputDir+'accuracycurve.pdf')
-    ## plt.close(2)
-
     print 'in makeRoc()'
     
     # let's use all entries
@@ -318,7 +298,54 @@ def makeLossPlot(inputDir, outputDir):
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.savefig("%s/loss.pdf"%outputDir)
+
+def makeMetricPlots(inputDir, outputDir):
+    import json
+    inputLogs = '%s/full_info.log'%inputDir
+    f = open(inputLogs)
+    myListOfDicts = json.load(f, object_hook=_byteify)
+    myDictOfLists = {}
+    for key, val in myListOfDicts[0].iteritems():
+        myDictOfLists[key] = []
+    for i, myDict in enumerate(myListOfDicts):
+        for key, val in myDict.iteritems():
+            myDictOfLists[key].append(myDict[key])
+    val_acc = np.asarray(myDictOfLists['val_acc'])
+    val_binary_acc = np.asarray(myDictOfLists['val_binary_accuracy'])
+    acc = np.asarray(myDictOfLists['acc'])
+    binary_acc = np.asarray(myDictOfLists['binary_accuracy'])
+
+    plt.figure()
+    plt.plot(val_acc, label='validation - accuracy')
+    plt.plot(val_binary_acc, label='validation - binary accuracy')
+    plt.plot(acc, label='train - accuracy')
+    plt.plot(binary_acc, label='train - binary accuracy')
+    plt.legend()
+    plt.xlabel('epoch')
+    plt.ylabel('accuracy')
+    plt.savefig("%s/acc.pdf"%outputDir)
     
+    val_err = np.asarray(myDictOfLists['val_mean_squared_error'])
+    err = np.asarray(myDictOfLists['mean_squared_error'])
+    plt.figure()
+    plt.plot(val_err, label='validation')
+    plt.plot(err, label='train')
+    plt.legend()
+    plt.xlabel('epoch')
+    plt.ylabel('mean squared error')
+    plt.savefig("%s/err.pdf"%outputDir)
+
+    val_errlog = np.asarray(myDictOfLists['val_mean_squared_logarithmic_error'])
+    errlog = np.asarray(myDictOfLists['mean_squared_logarithmic_error'])
+    plt.figure()
+    plt.plot(val_errlog, label='validation')
+    plt.plot(errlog, label='train')
+    plt.legend()
+    plt.xlabel('epoch')
+    plt.ylabel('mean squared logarithmic error')
+    plt.savefig("%s/errlog.pdf"%outputDir)
+    
+
 def makeComparisonPlots(testds, models,names, outputDir):
 
 

@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 #from keras import backend as K
 #from Losses import * #needed!                                                                                                                
 from modelTools import fixLayersContaining,printLayerInfosAndWeights
-                                                                                                                                  
+from keras.utils.vis_utils import plot_model                                                                                                                                  
 #import numpy as np
 #import matplotlib
 #matplotlib.use('agg')
@@ -68,7 +68,7 @@ LoadModel = False
 #select model and eval functions
 from DeepJet_models_final import conv_model_final as trainingModel
 from training_base import training_base
-from eval_funcs import loadModel, makeRoc, _byteify, makeLossPlot, makeComparisonPlots
+from eval_funcs import loadModel, makeRoc, _byteify, makeLossPlot, makeComparisonPlots, makeMetricPlots
 
 
 trainDir = dayinfo+"_train"+opts.n
@@ -88,7 +88,8 @@ if TrainBool:
     
         train.compileModel(learningrate=0.001,
                            loss=['categorical_crossentropy'],
-                           metrics=['accuracy'],
+#                           loss=['binary_crossentropy'],
+                           metrics=['accuracy','binary_accuracy','MSE','MSLE'],
                            loss_weights=[1.])
     
         model,history,callbacks = train.trainModel(nepochs=1, 
@@ -103,7 +104,7 @@ if TrainBool:
 
         train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
         #printLayerInfosAndWeights(train.keras_model)
-        model,history,callbacks = train.trainModel(nepochs=20,
+        model,history,callbacks = train.trainModel(nepochs=5,
                                                    batchsize=1024,
                                                    stop_patience=1000,
                                                    lr_factor=0.7,
@@ -128,4 +129,5 @@ if EvalBool:
 
     df, features_val = makeRoc(testd, evalModel, evalDir)
     makeLossPlot(trainDir,evalDir)
-    
+    makeMetricPlots(trainDir,evalDir)
+    plot_model(evalModel, to_file='model_plot.eps', show_shapes=True, show_layer_names=True)                            
