@@ -87,8 +87,7 @@ if TrainBool:
         train.setModel(trainingModel,inputDataset,removedVars)
     
         train.compileModel(learningrate=0.001,
-                           loss=['categorical_crossentropy'],
-#                           loss=['binary_crossentropy'],
+                           loss=['binary_crossentropy'], #other losses: categorical_crossentropy, kullback_leibler_divergence and many other in https://keras.io/losses/
                            metrics=['accuracy','binary_accuracy','MSE','MSLE'],
                            loss_weights=[1.])
     
@@ -130,4 +129,4 @@ if EvalBool:
     df, features_val = makeRoc(testd, evalModel, evalDir)
     makeLossPlot(trainDir,evalDir)
     makeMetricPlots(trainDir,evalDir)
-    plot_model(evalModel, to_file='model_plot.eps', show_shapes=True, show_layer_names=True)                            
+    plot_model(evalModel, to_file=evalDir.append('/model_architecture.eps'), show_shapes=True, show_layer_names=True)                            

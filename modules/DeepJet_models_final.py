@@ -116,8 +116,8 @@ def conv_model_final(inputs, num_classes, num_regclasses, datasets, removedVars 
 
 
     fc = FC(concat, 100, p=0.1, name='fc1')
-    output = keras.layers.Dense(num_classes, activation='softmax', name='ID_pred', kernel_initializer=kernel_initializer_fc)(fc)
-#    output = keras.layers.Dense(num_classes, activation='sigmoid', name='ID_pred', kernel_initializer=kernel_initializer_fc)(fc)
+#    output = keras.layers.Dense(num_classes, activation='softmax', name='ID_pred', kernel_initializer=kernel_initializer_fc)(fc)
+    output = keras.layers.Dense(num_classes, activation='sigmoid', name='ID_pred', kernel_initializer=kernel_initializer_fc)(fc)
 
     print output.shape
     model = keras.models.Model(inputs=inputs, outputs=[output])
