@@ -2,7 +2,7 @@ DeepJet: Repository for training and evaluation of deep neural networks for HEP
 ===============================================================================
  ----  Deep Double C tagger modifications ----
  ----  gpu_env modified to run on Maxwell Cluster at DESY  ----
- ---- Modification to the class plotter and to CNN output layer ----
+ ----  Modification to the class plotter and to CNN output layer ----
 
 Setup (CERN)
 ==========
@@ -29,7 +29,8 @@ Installation:
 mkdir <your working dir>
 cd <your working dir>
 #git clone https://github.com/mstoye/DeepJet #Original repo
-git clone https://github.com/anovak10/DeepJet
+#git clone https://github.com/anovak10/DeepJet_DBB.git is what I forked on March 4th, 2018
+git clone git@github.com:mastrolorenzo/DeepJet_DBB.git
 cd DeepJet/environment
 
 ## Normal environment
@@ -61,7 +62,7 @@ ssh naf-cms.desy.de
 ssh max-wgs # Login node
 # Install your environment as above
 # Install to $HOME as /scratch/ is machine dependant
-salloc -N 1 --partition=all --constraint=GPU  # To ask for an interactive GPU worker node session
+salloc -N 1 --partition=all --constraint=GPU --time=300 # To ask for an interactive GPU worker node session. Please note that time is in minutes!
 ssh <worker node name>
 nvidia-smi # to check gpu availability
 ```
@@ -73,6 +74,7 @@ Usage
 After logging in, please source the right environment (please cd to the directory first!):
 ```
 cd <your working dir>/DeepJet/environment
+bash
 source lxplus_env.sh / gpu_env.sh
 ```
 
@@ -91,6 +93,11 @@ The preparation for the training consists of the following steps
   ```
   python list_writer.py --train <path/to/train/files> --test <path/to/test/files>
   ```
+- So far, the data structure used are:
+  ```
+  TrainData_deepDoubleC_db_cpf_sv_reduced   for Hcc vs QCD discrimination
+  TrainData_deepDoubleCvB_db_cpf_sv_reduced   for Hcc vs Hbb discrimination 	
+  ```  
 
 - convert the root file to the data strucure for training:
   ```
@@ -123,7 +130,7 @@ In trainEval.py verify settings or go with the included defaults.
 
 ```
 cd DeepJet/Train
-python trainEval.py --train [--gpu -i <path/to/dataCollection.dc> -n <name/suffix/of/the/training/directory>]
+python trainEval.py --train [--gpu] -i <path/to/train/dataCollection.dc> -n <name/suffix/of/the/training/directory>
 ```
 
 
@@ -133,8 +140,7 @@ In trainEval.py verify settings or go with the included defaults. By default the
 
 ```
 cd DeepJet/Train
-python trainEval.py --eval [--gpu ]
-
+python trainEval.py --eval [--gpu ] -i <path/to/test/dataCollection.dc> -n <name/suffix/of/the/training/directory>
 ```
 
 

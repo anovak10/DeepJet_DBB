@@ -91,20 +91,20 @@ if TrainBool:
                            metrics=['accuracy','binary_accuracy','MSE','MSLE'],
                            loss_weights=[1.])
     
-        model,history,callbacks = train.trainModel(nepochs=1, 
-                                                   batchsize=1024, 
-                                                   stop_patience=1000, 
-                                                   lr_factor=0.7, 
-                                                   lr_patience=10, 
-                                                   lr_epsilon=0.00000001, 
-                                                   lr_cooldown=2, 
-                                                   lr_minimum=0.00000001, 
-                                                   maxqsize=100)
+#        model,history,callbacks = train.trainModel(nepochs=1, 
+#                                                   batchsize=1024, 
+#                                                   stop_patience=1000, 
+#                                                   lr_factor=0.7, 
+#                                                   lr_patience=10, 
+#                                                   lr_epsilon=0.00000001, 
+#                                                   lr_cooldown=2, 
+#                                                   lr_minimum=0.00000001, 
+#                                                   maxqsize=100)
 
         train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
         #printLayerInfosAndWeights(train.keras_model)
-        model,history,callbacks = train.trainModel(nepochs=5,
-                                                   batchsize=1024,
+        model,history,callbacks = train.trainModel(nepochs=60,
+                                                   batchsize=4096,
                                                    stop_patience=1000,
                                                    lr_factor=0.7,
                                                    lr_patience=10,
@@ -129,4 +129,4 @@ if EvalBool:
     df, features_val = makeRoc(testd, evalModel, evalDir)
     makeLossPlot(trainDir,evalDir)
     makeMetricPlots(trainDir,evalDir)
-    plot_model(evalModel, to_file=evalDir.append('/model_architecture.eps'), show_shapes=True, show_layer_names=True)                            
+    plot_model(evalModel, to_file='%s/model_architecture.eps'%evalDir, show_shapes=True, show_layer_names=True)                            
