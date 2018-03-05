@@ -35,6 +35,7 @@ cd DeepJet/environment
 
 ## Normal environment
 ./setupEnv.sh deepjetLinux3.conda
+pip install pandas
 
 # GPU enabled environment
 ./setupEnv.sh deepjetLinux3.conda gpu
