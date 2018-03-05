@@ -42,7 +42,7 @@ source gpu_env.sh
 pip uninstall tensorflow
 pip install tensorflow-gpu
 ```
-# Some tools to plot the NN architecture:
+Some tools to plot the NN architecture:
 ```
 pip install graphviz
 pip install pydot-ng
@@ -83,7 +83,7 @@ bash
 source lxplus_env.sh / gpu_env.sh
 ```
 
-The preparation for the training consists of the following steps
+The training/test input preprocessing
 ====
 
 - define the data structure for the training (example in modules/TrainData_template.py)
