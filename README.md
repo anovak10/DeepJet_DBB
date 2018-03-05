@@ -4,9 +4,9 @@ DeepJet: Repository for training and evaluation of deep neural networks for HEP
  ----  gpu_env modified to run on Maxwell Cluster at DESY  ----
  ----  Modification to the class plotter and to CNN output layer ----
 
-Setup (CERN)
+Setup (DESY-Maxwell or CERN)
 ==========
-It is essential to perform all these steps on lxplus7. Simple ssh to 'lxplus7' instead of 'lxplus'
+If you proceed to the installation on a CERN machine, then it is essential to perform all these steps on lxplus7. Simple ssh to 'lxplus7' instead of 'lxplus'.
 
 Pre-Installtion: Anaconda setup (only once)
 Download miniconda3
@@ -53,9 +53,10 @@ When the installation was successful, the DeepJet tools need to be compiled.
 ```
 cd <your working dir>
 cd DeepJet/environment
+bash
 source lxplus_env.sh / gpu_env.sh
 cd ../modules
-make -j4
+make -j 4
 ```
 After successfully compiling the tools, log out and in again.
 The environment is set up.
