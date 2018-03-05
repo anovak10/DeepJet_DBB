@@ -1,4 +1,4 @@
-DeepJet: Repository for training and evaluation of deep neural networks for HEP
+DeepJet_DBB: Repository for training and evaluation of deep neural networks for HEP
 ===============================================================================
  ----  Deep Double C tagger modifications ----
  ----  gpu_env modified to run on Maxwell Cluster at DESY  ----
@@ -31,7 +31,7 @@ cd <your working dir>
 #git clone https://github.com/mstoye/DeepJet #Original repo
 #git clone https://github.com/anovak10/DeepJet_DBB.git is what I forked on March 4th, 2018
 git clone git@github.com:mastrolorenzo/DeepJet_DBB.git
-cd DeepJet/environment
+cd DeepJet_DBB/environment
 
 ## Normal environment
 ./setupEnv.sh deepjetLinux3.conda
@@ -50,10 +50,10 @@ pip install pydot-ng
 ```
 This will take a while. Please log out and in again once the installation is finised.
 
-When the installation was successful, the DeepJet tools need to be compiled.
+When the installation was successful, the DeepJet_DBB tools need to be compiled.
 ```
 cd <your working dir>
-cd DeepJet/environment
+cd DeepJet_DBB/environment
 bash
 source lxplus_env.sh / gpu_env.sh
 cd ../modules
@@ -80,7 +80,7 @@ Usage
 
 After logging in, please source the right environment (please cd to the directory first!):
 ```
-cd <your working dir>/DeepJet/environment
+cd <your working dir>/DeepJet_DBB/environment
 bash
 source lxplus_env.sh / gpu_env.sh
 ```
@@ -92,7 +92,7 @@ The training/test input preprocessing
   for simplicity, copy the file to TrainData_template.py and adjust it. 
   Define a new class name (e.g. TrainData_template), leave the inheritance untouched
   
-- register this class in DeepJet/convertFromRoot/convertFromRoot.py by 
+- register this class in DeepJet_DBB/convertFromRoot/convertFromRoot.py by 
   a) importing it (the line in the code is indiacted by a comment)
   b) adding it to the class list below'
 
@@ -109,7 +109,7 @@ The training/test input preprocessing
 - convert the root file to the data strucure for training:
   ```
   # Prepare train data
-  cd DeepJet/convertFromRoot
+  cd DeepJet_DBB/convertFromRoot
   ./convertFromRoot.py -i /path/to/the/root/ntuple/list_of_root_files.txt -o /output/path/that/needs/some/disk/space -c TrainData_myclass
   #example
   python convertFromRoot.py -i train_list.txt -o Jan23_train_full_BB -c TrainData_deepDoubleB_db_pf_cpf_sv
@@ -136,7 +136,7 @@ Training
 In trainEval.py verify settings or go with the included defaults.
 
 ```
-cd DeepJet/Train
+cd DeepJet_DBB/Train
 python trainEval.py --train [--gpu] -i <path/to/train/dataCollection.dc> -n <name/suffix/of/the/training/directory>
 ```
 
@@ -146,7 +146,7 @@ Evaluation
 In trainEval.py verify settings or go with the included defaults. By default the test dataCollection is searched for in an equivalent directory to that of train dataCollection e.g. xxxxx_train_xxxx/dataCllection.dc -> xxxxx_test_xxxx/dataCllection.dc. Specify if otherwise.
 
 ```
-cd DeepJet/Train
+cd DeepJet_DBB/Train
 python trainEval.py --eval [--gpu ] -i <path/to/test/dataCollection.dc> -n <name/suffix/of/the/training/directory>
 ```
 
