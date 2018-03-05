@@ -42,6 +42,11 @@ source gpu_env.sh
 pip uninstall tensorflow
 pip install tensorflow-gpu
 ```
+# Some tools to plot the NN architecture:
+```
+pip install graphviz
+pip install pydot-ng
+```
 This will take a while. Please log out and in again once the installation is finised.
 
 When the installation was successful, the DeepJet tools need to be compiled.
