@@ -58,9 +58,9 @@ if opts.i != None: trainDataCollection = opts.i
 else: trainDataCollection = '/afs/cern.ch/work/a/anovak/public/Jan19_train_full/dataCollection.dc'
 testDataCollection = trainDataCollection.replace("train","test")
 
-
-removedVars = [[],range(0,10), range(0,22),[0,1,2,3,4,5,6,7,8,9,10,13]]
-#removedVars = None
+#understand what the fuck is that
+#removedVars = [[],range(0,10), range(0,22),[0,1,2,3,4,5,6,7,8,9,10,13]]
+removedVars = None
 
 #Toggle to load model directly (True) or load weights (False) 
 LoadModel = False
@@ -91,19 +91,19 @@ if TrainBool:
                            metrics=['accuracy','binary_accuracy','MSE','MSLE'],
                            loss_weights=[1.])
     
-#        model,history,callbacks = train.trainModel(nepochs=1, 
-#                                                   batchsize=1024, 
-#                                                   stop_patience=1000, 
-#                                                   lr_factor=0.7, 
-#                                                   lr_patience=10, 
-#                                                   lr_epsilon=0.00000001, 
-#                                                   lr_cooldown=2, 
-#                                                   lr_minimum=0.00000001, 
-#                                                   maxqsize=100)
+        model,history,callbacks = train.trainModel(nepochs=1, 
+                                                   batchsize=1024, 
+                                                   stop_patience=1000, 
+                                                   lr_factor=0.7, 
+                                                   lr_patience=10, 
+                                                   lr_epsilon=0.00000001, 
+                                                   lr_cooldown=2, 
+                                                   lr_minimum=0.00000001, 
+                                                   maxqsize=100)
 
         train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
         #printLayerInfosAndWeights(train.keras_model)
-        model,history,callbacks = train.trainModel(nepochs=60,
+        model,history,callbacks = train.trainModel(nepochs=15,
                                                    batchsize=4096,
                                                    stop_patience=1000,
                                                    lr_factor=0.7,
