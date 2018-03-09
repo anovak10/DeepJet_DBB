@@ -82,7 +82,7 @@ if TrainBool:
     args.outputDir = trainDir
 
     #also does all the parsing
-    train=training_base(testrun=False,args=args)
+    train=training_base(splittrainandtest=0.9,testrun=False,args=args)
     if not train.modelSet():
         train.setModel(trainingModel,inputDataset,removedVars)
     
