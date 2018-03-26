@@ -54,7 +54,7 @@ def loadModel(inputDir,trainData,model,LoadModel,sampleDatasets=None,removedVars
     return evalModel
 
 
-def makeRoc(testd, model, outputDir):
+def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     print 'in makeRoc()'
     
     # let's use all entries
@@ -138,17 +138,36 @@ def makeRoc(testd, model, outputDir):
     for wp in [0.01, 0.05, 0.1, 0.25, 0.5]: # % mistag rate
         idx, val = find_nearest(fpr, wp)
         deepdoublebcuts[str(wp)] = threshold[idx] # threshold for deep double-b corresponding to ~1% mistag rate
-        print('deep double-b > %f coresponds to %f%% QCD mistag rate'%(deepdoublebcuts[str(wp)] ,100*val))
+        if isHccVsHbb is False:
+            print('deep double-c > %f coresponds to %f%% QCD mistag rate'%(deepdoublebcuts[str(wp)] ,100*val))
+        else:
+            print('deep double-c > %f coresponds to %f%% Hbb mistag rate'%(deepdoublebcuts[str(wp)] ,100*val))
 
-    auc1 = auc(fpr, tpr)
-    auc2 = auc(dfpr, dtpr)
-
+    if isCCsig is True :
+        auc1 = auc(fpr, tpr)
+    else: 
+        auc1 = auc(1.0-fpr, 1.0-tpr)
+    if isHccVsHbb is False :
+        auc2 = auc(dfpr, dtpr)
+    else :
+        auc2 = auc(1.0-dfpr, 1.0-dtpr)
     plt.figure()       
-    plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))
-    plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(auc2*100))
+    if isHccVsHbb is False :
+        plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))
+        plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(auc2*100))
+    else :
+        if isCCsig is True : 
+            plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))
+        else :
+            plt.plot(1.0-tpr,1.0-fpr,color="green",label='deep double-b, auc = %.1f%%'%(auc1*100))
+        plt.plot(1.0-dtpr,1.0-dfpr,color="darkorange",label='BDT double-b, auc = %.1f%%'%(auc2*100))
     plt.semilogy()
-    plt.xlabel("H(cc) efficiency")
-    plt.ylabel("QCD mistag rate")
+    if isHccVsHbb is False :
+        plt.xlabel("H(cc) efficiency")
+        plt.ylabel("QCD mistag rate")
+    else :
+        plt.xlabel("H(cc) efficiency")
+        plt.ylabel("H(bb) mistag rate")
     plt.ylim(0.001,1)
     plt.grid(True)
     plt.legend()
@@ -156,17 +175,25 @@ def makeRoc(testd, model, outputDir):
     
     plt.figure()
     bins = np.linspace(-1,1,70)
-    plt.hist(df['fj_doubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    if isHccVsHbb is False :
+        plt.hist(df['fj_doubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+        plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    else :
+        plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+        plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
     plt.xlabel("BDT double-b")
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"/doubleb.pdf")
 
     plt.figure()
     bins = np.linspace(0,1,70)
-    plt.hist(df['fj_deepdoublec'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_deepdoublec'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
-    plt.xlabel("deep double-b")
+    if isHccVsHbb is False :
+        plt.hist(df['fj_deepdoublec'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+        plt.hist(df['fj_deepdoublec'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    else :
+        plt.hist(df['fj_deepdoublec'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+        plt.hist(df['fj_deepdoublec'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')       
+    plt.xlabel("deep double-c")
     #plt.ylim(0.00001,1)
     #plt.semilogy()
     plt.legend(loc='upper left')
@@ -174,16 +201,24 @@ def makeRoc(testd, model, outputDir):
     
     plt.figure()
     bins = np.linspace(0,2000,70)
-    plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    if isHccVsHbb is False :
+        plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+        plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    else :
+        plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+        plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
     plt.xlabel(r'$p_{\mathrm{T}}$')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"/pt.pdf")
     
     plt.figure()
     bins = np.linspace(40,200,41)
-    plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    if isHccVsHbb is False :
+        plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+        plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    else :
+        plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+        plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"/msd.pdf")
@@ -191,37 +226,55 @@ def makeRoc(testd, model, outputDir):
     plt.figure()
     bins = np.linspace(40,200,41)
     df_passdoubleb = df[df.fj_doubleb > 0.9]
-    plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD')
-    plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    if isHccVsHbb is False :
+        plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD')
+        plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+    else :
+        plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
+        plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper left')
-    plt.savefig(outputDir+"/msd_passdoubleb.pdf")
+    plt.savefig(outputDir+"/msd_passdoublec.pdf")
 
     plt.figure()
     bins = np.linspace(40,200,41)
     for wp, deepdoublebcut in reversed(sorted(deepdoublebcuts.iteritems())):
         df_passdeepdoubleb = df[df.fj_deepdoublec > deepdoublebcut]
-        plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],normed=True,histtype='step',label='QCD %i%% mis-tag'%(float(wp)*100.))
-        #plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc) %s'%wp)
+        if isHccVsHbb is False :
+            plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],normed=True,histtype='step',label='QCD %i%% mis-tag'%(float(wp)*100.))
+        else : 
+            if isCCsig is True:
+                plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc) %s'%wp)
+            else : 
+                plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],normed=True,histtype='step',label='H(bb) %i%% mis-tag'%(float(wp)*100.))
+
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper right')
     plt.savefig(outputDir+"/msd_passdeepdoublec.pdf")
     
     plt.figure()
     bins = np.linspace(40,200,41)
-    plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|QCD)')
-    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|QCD)')
+    if isHccVsHbb is False :
+        plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|QCD)')
+        plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|QCD)')
+    else :
+        plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(bb)|H(bb))')
+        plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|H(bb))')
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper left')
-    plt.savefig(outputDir+"/msd_weightdeepdoublec_QCD.pdf")
+    plt.savefig(outputDir+"/msd_weightdeepdoublec_Bkg.pdf")
 
     plt.figure()
     bins = np.linspace(40,200,41)
-    plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|H(cc))')
-    plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|H(cc))')
+    if isHccVsHbb is False :
+        plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|H(cc))')
+        plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|H(cc))')
+    else :
+        plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(df['fj_isH']),alpha=0.5,normed=True,label='p(H(bb)|H(cc))')
+        plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|H(cc))')
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper left')
-    plt.savefig(outputDir+"/msd_weightdeepdoublec_H.pdf")
+    plt.savefig(outputDir+"/msd_weightdeepdoublec_Sig.pdf")
 
 
     def kl(p, q):
@@ -242,13 +295,21 @@ def makeRoc(testd, model, outputDir):
     print('hist_fill_h sum', np.sum(hist_fill_h))
     print('hist_anti_h sum', np.sum(hist_anti_h))
     plt.figure()
-    plt.bar(bin_edges[:-1], hist_anti_q, width = 4,alpha=0.5,label='p(QCD|QCD)')
-    plt.bar(bin_edges[:-1], hist_fill_q, width = 4,alpha=0.5,label='p(H(cc)|QCD))')
+    if isHccVsHbb is False :
+        plt.bar(bin_edges[:-1], hist_anti_q, width = 4,alpha=0.5,label='p(QCD|QCD)')
+        plt.bar(bin_edges[:-1], hist_fill_q, width = 4,alpha=0.5,label='p(H(cc)|QCD))')
+    else :
+        plt.bar(bin_edges[:-1], hist_anti_q, width = 4,alpha=0.5,label='p(H(bb)|H(bb))')
+        plt.bar(bin_edges[:-1], hist_fill_q, width = 4,alpha=0.5,label='p(H(cc)|H(bb)))')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"msd_kldiv_q.pdf")
     plt.figure()
-    plt.bar(bin_edges[:-1], hist_anti_h, width = 4,alpha=0.5,label='p(QCD|H(cc))')
-    plt.bar(bin_edges[:-1], hist_fill_h, width = 4,alpha=0.5,label='p(H(cc)|H(cc))')
+    if isHccVsHbb is False :
+        plt.bar(bin_edges[:-1], hist_anti_h, width = 4,alpha=0.5,label='p(QCD|H(cc))')
+        plt.bar(bin_edges[:-1], hist_fill_h, width = 4,alpha=0.5,label='p(H(cc)|H(cc))')
+    else :
+        plt.bar(bin_edges[:-1], hist_anti_h, width = 4,alpha=0.5,label='p(H(bb)|H(cc))')
+        plt.bar(bin_edges[:-1], hist_fill_h, width = 4,alpha=0.5,label='p(H(cc)|H(cc))')
     plt.legend(loc='upper left')
     plt.savefig(outputDir+"msd_kldiv_h.pdf")
     print('kl_q',kl(hist_fill_q, hist_anti_q))
@@ -434,8 +495,10 @@ def makeComparisonPlots(testds, models,names, outputDir):
     for i in range(len(models)):
         aucs.append(auc(fprs[i],tprs[i]))
     
-    aucBDT = auc(dfpr, dtpr)
-
+    if isHccVsHbb is False :
+        aucBDT = auc(dfpr, dtpr)
+    else :
+        aucBDT = auc(1.0-dfpr, 1.0-dtpr)
     plt.figure()       
     for i in range(len(models)):
         plt.plot(tprs[i],fprs[i],label='deep %s, auc = %.1f%%'% (names[i],(aucs[i]*100)))
@@ -443,7 +506,10 @@ def makeComparisonPlots(testds, models,names, outputDir):
     plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(aucBDT*100))
     plt.semilogy()
     plt.xlabel("H(cc) efficiency")
-    plt.ylabel("QCD mistag rate")
+    if isHccVsHbb is False :        
+        plt.ylabel("QCD mistag rate")
+    else : 
+        plt.ylabel("H(bb) mistag rate")      
     plt.ylim(0.001,1)
     plt.grid(True)
     plt.legend()
@@ -456,8 +522,11 @@ def makeComparisonPlots(testds, models,names, outputDir):
         for i in range(len(models)):
             deepdoublebcut = deepdoublebcuts[str(wp)][i]
             df_passdeepdoubleb = dfs[i][dfs[i].fj_deepdoublec > deepdoublebcut]
-            plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD %i%% mis-tag for %s'%(float(wp)*100.,names[i]))
+            if isHccVsHbb is False :
+                plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD %i%% mis-tag for %s'%(float(wp)*100.,names[i]))
+            else :
+                plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb) %i%% mis-tag for %s'%(float(wp)*100.,names[i]))
         #plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc) %s'%wp)
         plt.xlabel(r'$m_{\mathrm{SD}}$')
         plt.legend(loc='upper right')
-        plt.savefig(outputDir+"msd_passdeepdoubleb%s.pdf"%(str(int(wp*100))))
+        plt.savefig(outputDir+"msd_passdeepdoublec%s.pdf"%(str(int(wp*100))))

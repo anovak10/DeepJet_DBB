@@ -103,7 +103,7 @@ if TrainBool:
 
         train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
         #printLayerInfosAndWeights(train.keras_model)
-        model,history,callbacks = train.trainModel(nepochs=15,
+        model,history,callbacks = train.trainModel(nepochs=80,
                                                    batchsize=4096,
                                                    stop_patience=1000,
                                                    lr_factor=0.7,
@@ -126,7 +126,9 @@ if EvalBool:
     else:
         os.mkdir(evalDir)
 
-    df, features_val = makeRoc(testd, evalModel, evalDir)
+    isHccVsHbb = False
+    isCCsig = False
+    df, features_val = makeRoc(testd, evalModel, evalDir, isHccVsHbb, isCCsig)
     makeLossPlot(trainDir,evalDir)
     makeMetricPlots(trainDir,evalDir)
     plot_model(evalModel, to_file='%s/model_architecture.eps'%evalDir, show_shapes=True, show_layer_names=True)                            
