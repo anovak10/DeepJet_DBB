@@ -103,8 +103,8 @@ if TrainBool:
 
         train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
         #printLayerInfosAndWeights(train.keras_model)
-        model,history,callbacks = train.trainModel(nepochs=80,
-                                                   batchsize=4096,
+        model,history,callbacks = train.trainModel(nepochs=15,
+                                                   batchsize=1024,
                                                    stop_patience=1000,
                                                    lr_factor=0.7,
                                                    lr_patience=10,

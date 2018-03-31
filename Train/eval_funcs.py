@@ -123,6 +123,7 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     df['fj_isH'] = labels_val[:,1]
     df['fj_deepdoublec'] = predict_test[:,1]
     df = df[(df.fj_sdmass > 40) & (df.fj_sdmass < 200) & (df.fj_pt > 300) &  (df.fj_pt < 2500)]
+    df.to_pickle(outputDir+'/testresults.pkl')   
 
     print(df.iloc[:10])
 
@@ -143,28 +144,34 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
         else:
             print('deep double-c > %f coresponds to %f%% Hbb mistag rate'%(deepdoublebcuts[str(wp)] ,100*val))
 
-    if isCCsig is True :
-        auc1 = auc(fpr, tpr)
-    else: 
-        auc1 = auc(1.0-fpr, 1.0-tpr)
+
+    auc1 = auc(fpr, tpr)
     if isHccVsHbb is False :
         auc2 = auc(dfpr, dtpr)
     else :
         auc2 = auc(1.0-dfpr, 1.0-dtpr)
     plt.figure()       
     if isHccVsHbb is False :
-        plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))
+        if isCCsig is False :
+            plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))    
+        else :
+            plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))
         plt.plot(dtpr,dfpr,label='BDT double-b, auc = %.1f%%'%(auc2*100))
     else :
         if isCCsig is True : 
             plt.plot(tpr,fpr,label='deep double-c, auc = %.1f%%'%(auc1*100))
+            plt.plot(1.0-dtpr,1.0-dfpr,color="darkorange",label='BDT double-b, auc = %.1f%%'%(auc2*100))
         else :
-            plt.plot(1.0-tpr,1.0-fpr,color="green",label='deep double-b, auc = %.1f%%'%(auc1*100))
-        plt.plot(1.0-dtpr,1.0-dfpr,color="darkorange",label='BDT double-b, auc = %.1f%%'%(auc2*100))
+            plt.plot(tpr,fpr,color="green",label='deep double-b, auc = %.1f%%'%(auc1*100))
+            plt.plot(1.0-dtpr,1.0-dfpr,color="darkorange",label='BDT double-b, auc = %.1f%%'%(auc2*100))
+
     plt.semilogy()
     if isHccVsHbb is False :
         plt.xlabel("H(cc) efficiency")
         plt.ylabel("QCD mistag rate")
+        if isCCsig is False :
+            plt.xlabel("H(bb) efficiency")
+            plt.ylabel("QCD mistag rate")
     else :
         plt.xlabel("H(cc) efficiency")
         plt.ylabel("H(bb) mistag rate")
@@ -178,6 +185,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.hist(df['fj_doubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
         plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+        if isCCsig is False :
+            plt.hist(df['fj_doubleb'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+            plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
     else :
         plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
         plt.hist(df['fj_doubleb'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
@@ -190,6 +200,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.hist(df['fj_deepdoublec'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
         plt.hist(df['fj_deepdoublec'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+        if isCCsig is False :
+            plt.hist(df['fj_deepdoublec'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+            plt.hist(df['fj_deepdoublec'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
     else :
         plt.hist(df['fj_deepdoublec'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
         plt.hist(df['fj_deepdoublec'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')       
@@ -204,6 +217,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
         plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+        if isCCsig is False :
+            plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+            plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
     else :
         plt.hist(df['fj_pt'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
         plt.hist(df['fj_pt'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
@@ -216,6 +232,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
         plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+        if isCCsig is False :
+            plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='QCD')
+            plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
     else :
         plt.hist(df['fj_sdmass'], bins=bins, weights = 1-df['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
         plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
@@ -229,6 +248,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD')
         plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
+        if isCCsig is False :
+            plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='QCD')
+            plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
     else :
         plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(bb)')
         plt.hist(df_passdoubleb['fj_sdmass'], bins=bins, weights = df_passdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc)')
@@ -243,10 +265,7 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
         if isHccVsHbb is False :
             plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],normed=True,histtype='step',label='QCD %i%% mis-tag'%(float(wp)*100.))
         else : 
-            if isCCsig is True:
-                plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = df_passdeepdoubleb['fj_isH'],alpha=0.5,normed=True,label='H(cc) %s'%wp)
-            else : 
-                plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],normed=True,histtype='step',label='H(bb) %i%% mis-tag'%(float(wp)*100.))
+            plt.hist(df_passdeepdoubleb['fj_sdmass'], bins=bins, weights = 1-df_passdeepdoubleb['fj_isH'],normed=True,histtype='step',label='H(bb) %i%% mis-tag'%(float(wp)*100.))
 
     plt.xlabel(r'$m_{\mathrm{SD}}$')
     plt.legend(loc='upper right')
@@ -257,6 +276,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|QCD)')
         plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|QCD)')
+        if isCCsig is False :
+            plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|QCD)')
+            plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(bb)|QCD)')
     else :
         plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(bb)|H(bb))')
         plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(1-df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|H(bb))')
@@ -269,6 +291,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|H(cc))')
         plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|H(cc))')
+        if isCCsig is False :
+            plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(df['fj_isH']),alpha=0.5,normed=True,label='p(QCD|H(bb))')
+            plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(df['fj_isH']),alpha=0.5,normed=True,label='p(H(bb)|H(bb))')
     else :
         plt.hist(df['fj_sdmass'], bins=bins, weights = (1-df['fj_deepdoublec'])*(df['fj_isH']),alpha=0.5,normed=True,label='p(H(bb)|H(cc))')
         plt.hist(df['fj_sdmass'], bins=bins, weights = df['fj_deepdoublec']*(df['fj_isH']),alpha=0.5,normed=True,label='p(H(cc)|H(cc))')
@@ -298,6 +323,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.bar(bin_edges[:-1], hist_anti_q, width = 4,alpha=0.5,label='p(QCD|QCD)')
         plt.bar(bin_edges[:-1], hist_fill_q, width = 4,alpha=0.5,label='p(H(cc)|QCD))')
+        if isCCsig is False :
+            plt.bar(bin_edges[:-1], hist_anti_q, width = 4,alpha=0.5,label='p(QCD|QCD)')
+            plt.bar(bin_edges[:-1], hist_fill_q, width = 4,alpha=0.5,label='p(H(bb)|QCD))')
     else :
         plt.bar(bin_edges[:-1], hist_anti_q, width = 4,alpha=0.5,label='p(H(bb)|H(bb))')
         plt.bar(bin_edges[:-1], hist_fill_q, width = 4,alpha=0.5,label='p(H(cc)|H(bb)))')
@@ -307,6 +335,9 @@ def makeRoc(testd, model, outputDir, isHccVsHbb, isCCsig):
     if isHccVsHbb is False :
         plt.bar(bin_edges[:-1], hist_anti_h, width = 4,alpha=0.5,label='p(QCD|H(cc))')
         plt.bar(bin_edges[:-1], hist_fill_h, width = 4,alpha=0.5,label='p(H(cc)|H(cc))')
+        if isCCsig is False :
+            plt.bar(bin_edges[:-1], hist_anti_h, width = 4,alpha=0.5,label='p(QCD|H(bb))')
+            plt.bar(bin_edges[:-1], hist_fill_h, width = 4,alpha=0.5,label='p(H(bb)|H(bb))')
     else :
         plt.bar(bin_edges[:-1], hist_anti_h, width = 4,alpha=0.5,label='p(H(bb)|H(cc))')
         plt.bar(bin_edges[:-1], hist_fill_h, width = 4,alpha=0.5,label='p(H(cc)|H(cc))')

@@ -647,10 +647,11 @@ class TrainData_deepDoubleBvQCD_db_cpf_sv_reduced(TrainData_deepDoubleC_db_cpf_s
         import numpy
         self.reducedtruthclasses=['fj_isBB','fj_isQCD']
         if tuple_in is not None:
-            q = tuple_in['fj_isBB'] * tuple_in['fj_isH']
+            q = tuple_in['fj_isQCD'] * tuple_in['fj_isNonCC']
             q = q.view(numpy.ndarray)
-            h = tuple_in['fj_isQCD'] * tuple_in['fj_isNonCC']
+            h = tuple_in['fj_isBB'] * tuple_in['fj_isH']
             h = h.view(numpy.ndarray)
+
             return numpy.vstack((q,h)).transpose()
  
 
