@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 #from keras import backend as K
 #from Losses import * #needed!                                                                                                                
 from modelTools import fixLayersContaining,printLayerInfosAndWeights
-                                                                                                                                  
+from keras.utils.vis_utils import plot_model                                                                                                                                  
 #import numpy as np
 #import matplotlib
 #matplotlib.use('agg')
@@ -58,9 +58,9 @@ if opts.i != None: trainDataCollection = opts.i
 else: trainDataCollection = '/afs/cern.ch/work/a/anovak/public/Jan19_train_full/dataCollection.dc'
 testDataCollection = trainDataCollection.replace("train","test")
 
-
-removedVars = [[],range(0,10), range(0,22),[0,1,2,3,4,5,6,7,8,9,10,13]]
-#removedVars = None
+#understand what the fuck is that
+#removedVars = [[],range(0,10), range(0,22),[0,1,2,3,4,5,6,7,8,9,10,13]]
+removedVars = None
 
 #Toggle to load model directly (True) or load weights (False) 
 LoadModel = False
@@ -68,7 +68,7 @@ LoadModel = False
 #select model and eval functions
 from DeepJet_models_final import conv_model_final as trainingModel
 from training_base import training_base
-from eval_funcs import loadModel, makeRoc, _byteify, makeLossPlot, makeComparisonPlots
+from eval_funcs import loadModel, makeRoc, _byteify, makeLossPlot, makeComparisonPlots, makeMetricPlots
 
 
 trainDir = dayinfo+"_train"+opts.n
@@ -82,13 +82,13 @@ if TrainBool:
     args.outputDir = trainDir
 
     #also does all the parsing
-    train=training_base(testrun=False,args=args)
+    train=training_base(splittrainandtest=0.9,testrun=False,args=args)
     if not train.modelSet():
         train.setModel(trainingModel,inputDataset,removedVars)
     
         train.compileModel(learningrate=0.001,
-                           loss=['categorical_crossentropy'],
-                           metrics=['accuracy'],
+                           loss=['binary_crossentropy'], #other losses: categorical_crossentropy, kullback_leibler_divergence and many other in https://keras.io/losses/
+                           metrics=['accuracy','binary_accuracy','MSE','MSLE'],
                            loss_weights=[1.])
     
         model,history,callbacks = train.trainModel(nepochs=1, 
@@ -103,7 +103,7 @@ if TrainBool:
 
         train.keras_model=fixLayersContaining(train.keras_model, 'input_batchnorm')
         #printLayerInfosAndWeights(train.keras_model)
-        model,history,callbacks = train.trainModel(nepochs=20,
+        model,history,callbacks = train.trainModel(nepochs=15,
                                                    batchsize=1024,
                                                    stop_patience=1000,
                                                    lr_factor=0.7,
@@ -126,6 +126,9 @@ if EvalBool:
     else:
         os.mkdir(evalDir)
 
-    df, features_val = makeRoc(testd, evalModel, evalDir)
+    isHccVsHbb = False
+    isCCsig = False
+    df, features_val = makeRoc(testd, evalModel, evalDir, isHccVsHbb, isCCsig)
     makeLossPlot(trainDir,evalDir)
-    
+    makeMetricPlots(trainDir,evalDir)
+    plot_model(evalModel, to_file='%s/model_architecture.eps'%evalDir, show_shapes=True, show_layer_names=True)                            

@@ -1,12 +1,12 @@
-DeepJet: Repository for training and evaluation of deep neural networks for HEP
+DeepJet_DBB: Repository for training and evaluation of deep neural networks for HEP
 ===============================================================================
  ----  Deep Double C tagger modifications ----
  ----  gpu_env modified to run on Maxwell Cluster at DESY  ----
+ ----  Modification to the class plotter and to CNN output layer ----
 
-
-Setup (CERN)
+Setup (DESY-Maxwell or CERN)
 ==========
-It is essential to perform all these steps on lxplus7. Simple ssh to 'lxplus7' instead of 'lxplus'
+If you proceed to the installation on a CERN machine, then it is essential to perform all these steps on lxplus7. Simple ssh to 'lxplus7' instead of 'lxplus'.
 
 Pre-Installtion: Anaconda setup (only once)
 Download miniconda3
@@ -29,11 +29,13 @@ Installation:
 mkdir <your working dir>
 cd <your working dir>
 #git clone https://github.com/mstoye/DeepJet #Original repo
-git clone https://github.com/anovak10/DeepJet
-cd DeepJet/environment
+#git clone https://github.com/anovak10/DeepJet_DBB.git is what I forked on March 4th, 2018
+git clone git@github.com:mastrolorenzo/DeepJet_DBB.git
+cd DeepJet_DBB/environment
 
 ## Normal environment
 ./setupEnv.sh deepjetLinux3.conda
+pip install pandas
 
 # GPU enabled environment
 ./setupEnv.sh deepjetLinux3.conda gpu
@@ -41,15 +43,21 @@ source gpu_env.sh
 pip uninstall tensorflow
 pip install tensorflow-gpu
 ```
+Some tools to plot the NN architecture:
+```
+pip install graphviz
+pip install pydot-ng
+```
 This will take a while. Please log out and in again once the installation is finised.
 
-When the installation was successful, the DeepJet tools need to be compiled.
+When the installation was successful, the DeepJet_DBB tools need to be compiled.
 ```
 cd <your working dir>
-cd DeepJet/environment
+cd DeepJet_DBB/environment
+bash
 source lxplus_env.sh / gpu_env.sh
 cd ../modules
-make -j4
+make -j 4
 ```
 After successfully compiling the tools, log out and in again.
 The environment is set up.
@@ -61,7 +69,7 @@ ssh naf-cms.desy.de
 ssh max-wgs # Login node
 # Install your environment as above
 # Install to $HOME as /scratch/ is machine dependant
-salloc -N 1 --partition=all --constraint=GPU  # To ask for an interactive GPU worker node session
+salloc -N 1 --partition=all --constraint=GPU --time=300 # To ask for an interactive GPU worker node session. Please note that time is in minutes!
 ssh <worker node name>
 nvidia-smi # to check gpu availability
 ```
@@ -72,18 +80,19 @@ Usage
 
 After logging in, please source the right environment (please cd to the directory first!):
 ```
-cd <your working dir>/DeepJet/environment
+cd <your working dir>/DeepJet_DBB/environment
+bash
 source lxplus_env.sh / gpu_env.sh
 ```
 
-The preparation for the training consists of the following steps
+The training/test input preprocessing
 ====
 
 - define the data structure for the training (example in modules/TrainData_template.py)
   for simplicity, copy the file to TrainData_template.py and adjust it. 
   Define a new class name (e.g. TrainData_template), leave the inheritance untouched
   
-- register this class in DeepJet/convertFromRoot/convertFromRoot.py by 
+- register this class in DeepJet_DBB/convertFromRoot/convertFromRoot.py by 
   a) importing it (the line in the code is indiacted by a comment)
   b) adding it to the class list below'
 
@@ -91,11 +100,16 @@ The preparation for the training consists of the following steps
   ```
   python list_writer.py --train <path/to/train/files> --test <path/to/test/files>
   ```
+- So far, the data structure used are:
+  ```
+  TrainData_deepDoubleC_db_cpf_sv_reduced   for Hcc vs QCD discrimination
+  TrainData_deepDoubleCvB_db_cpf_sv_reduced   for Hcc vs Hbb discrimination 	
+  ```  
 
 - convert the root file to the data strucure for training:
   ```
   # Prepare train data
-  cd DeepJet/convertFromRoot
+  cd DeepJet_DBB/convertFromRoot
   ./convertFromRoot.py -i /path/to/the/root/ntuple/list_of_root_files.txt -o /output/path/that/needs/some/disk/space -c TrainData_myclass
   #example
   python convertFromRoot.py -i train_list.txt -o Jan23_train_full_BB -c TrainData_deepDoubleB_db_pf_cpf_sv
@@ -122,8 +136,8 @@ Training
 In trainEval.py verify settings or go with the included defaults.
 
 ```
-cd DeepJet/Train
-python trainEval.py --train [--gpu -i <path/to/dataCollection.dc> -n <name/suffix/of/the/training/directory>]
+cd DeepJet_DBB/Train
+python trainEval.py --train [--gpu] -i <path/to/train/dataCollection.dc> -n <name/suffix/of/the/training/directory>
 ```
 
 
@@ -132,9 +146,8 @@ Evaluation
 In trainEval.py verify settings or go with the included defaults. By default the test dataCollection is searched for in an equivalent directory to that of train dataCollection e.g. xxxxx_train_xxxx/dataCllection.dc -> xxxxx_test_xxxx/dataCllection.dc. Specify if otherwise.
 
 ```
-cd DeepJet/Train
-python trainEval.py --eval [--gpu ]
-
+cd DeepJet_DBB/Train
+python trainEval.py --eval [--gpu ] -i <path/to/test/dataCollection.dc> -n <name/suffix/of/the/training/directory>
 ```
 
 
